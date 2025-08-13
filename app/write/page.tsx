@@ -1,0 +1,478 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { motion } from 'framer-motion'
+import { 
+  Save, 
+  Eye, 
+  Send, 
+  ArrowLeft,
+  Settings,
+  Image,
+  Tag,
+  Calendar,
+  Globe,
+  Lock,
+  Eye as EyeIcon
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { useToast } from '@/hooks/use-toast'
+import MarkdownEditor from '@/components/editor/MarkdownEditor'
+import MediaLibrary from '@/components/media/MediaLibrary'
+import Link from 'next/link'
+
+interface Category {
+  id: string
+  name: string
+  slug: string
+}
+
+import { MediaFile } from '@/types/media'
+
+export default function WritePage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const { toast } = useToast()
+
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [excerpt, setExcerpt] = useState('')
+  const [categoryId, setCategoryId] = useState('')
+  const [tags, setTags] = useState<string[]>([])
+  const [tagInput, setTagInput] = useState('')
+  const [postStatus, setPostStatus] = useState<'DRAFT' | 'PUBLISHED'>('DRAFT')
+  const [visibility, setVisibility] = useState<'PUBLIC' | 'PRIVATE' | 'UNLISTED'>('PUBLIC')
+  const [isFeatured, setIsFeatured] = useState(false)
+  const [metaTitle, setMetaTitle] = useState('')
+  const [metaDescription, setMetaDescription] = useState('')
+
+  const [categories, setCategories] = useState<Category[]>([])
+  const [saving, setSaving] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [showMediaLibrary, setShowMediaLibrary] = useState(false)
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin?callbackUrl=/write')
+    }
+  }, [status, router])
+
+  // Load categories
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await fetch('/api/categories')
+        if (response.ok) {
+          const data = await response.json()
+          setCategories(data)
+        }
+      } catch (error) {
+        console.error('Failed to load categories:', error)
+      }
+    }
+
+    loadCategories()
+  }, [])
+
+  // Handle image upload
+  const handleImageUpload = async (file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!response.ok) {
+      throw new Error('Upload failed')
+    }
+
+    const data = await response.json()
+    return data.url
+  }
+
+  // Handle multiple file upload
+  const handleMultipleUpload = async (files: File[]): Promise<MediaFile[]> => {
+    const uploaded: MediaFile[] = []
+    
+    for (const file of files) {
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          uploaded.push(data)
+        }
+      } catch (error) {
+        console.error('Failed to upload file:', file.name, error)
+      }
+    }
+
+    return uploaded
+  }
+
+  // Add tag
+  const addTag = (tag: string) => {
+    const trimmedTag = tag.trim()
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      setTags([...tags, trimmedTag])
+      setTagInput('')
+    }
+  }
+
+  // Remove tag
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove))
+  }
+
+  // Save post
+  const savePost = async (publish = false) => {
+    if (!title.trim() || !content.trim()) {
+      toast({
+        title: '请填写必填字段',
+        description: '标题和内容不能为空',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setSaving(true)
+    
+    try {
+      const postData = {
+        title: title.trim(),
+        content,
+        excerpt: excerpt.trim() || undefined,
+        categoryId: categoryId || undefined,
+        tags,
+        status: publish ? 'PUBLISHED' : postStatus,
+        visibility,
+        isFeatured,
+        metaTitle: metaTitle.trim() || undefined,
+        metaDescription: metaDescription.trim() || undefined
+      }
+
+      const response = await fetch('/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(postData)
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        toast({
+          title: publish ? '发布成功' : '保存成功',
+          description: publish ? '文章已成功发布' : '草稿已保存'
+        })
+        
+        // Redirect to the post page
+        router.push(`/posts/${data.slug}`)
+      } else {
+        const error = await response.json()
+        throw new Error(error.error || 'Save failed')
+      }
+    } catch (error: any) {
+      console.error('Save failed:', error)
+      toast({
+        title: '保存失败',
+        description: error.message || '请稍后重试',
+        variant: 'destructive'
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  if (!session) {
+    return null
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-4">
+              <Link href="/">
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  返回首页
+                </Button>
+              </Link>
+              
+              <div className="h-6 w-px bg-border" />
+              
+              <h1 className="text-xl font-semibold">写文章</h1>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMediaLibrary(true)}
+              >
+                <Image className="h-4 w-4 mr-2" />
+                媒体库
+              </Button>
+
+              <Dialog open={showSettings} onOpenChange={setShowSettings}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Settings className="h-4 w-4 mr-2" />
+                    设置
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>文章设置</DialogTitle>
+                  </DialogHeader>
+                  
+                  <div className="space-y-6">
+                    {/* Basic Settings */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">摘要</label>
+                      <textarea
+                        value={excerpt}
+                        onChange={(e) => setExcerpt(e.target.value)}
+                        placeholder="文章摘要（可选）"
+                        className="w-full p-3 border border-input rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">分类</label>
+                        <Select value={categoryId} onValueChange={setCategoryId}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="选择分类" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((category) => (
+                              <SelectItem key={category.id} value={category.id}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">可见性</label>
+                        <Select value={visibility} onValueChange={(value: any) => setVisibility(value)}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="PUBLIC">
+                              <div className="flex items-center">
+                                <Globe className="h-4 w-4 mr-2" />
+                                公开
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="UNLISTED">
+                              <div className="flex items-center">
+                                <EyeIcon className="h-4 w-4 mr-2" />
+                                不公开列表
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="PRIVATE">
+                              <div className="flex items-center">
+                                <Lock className="h-4 w-4 mr-2" />
+                                私人
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Tags */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">标签</label>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary/10 text-primary"
+                          >
+                            {tag}
+                            <button
+                              type="button"
+                              onClick={() => removeTag(tag)}
+                              className="ml-2 text-primary/60 hover:text-primary"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={tagInput}
+                          onChange={(e) => setTagInput(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              addTag(tagInput)
+                            }
+                          }}
+                          placeholder="添加标签"
+                          className="flex-1 p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                        <Button 
+                          type="button"
+                          onClick={() => addTag(tagInput)}
+                          disabled={!tagInput.trim()}
+                        >
+                          添加
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* SEO Settings */}
+                    <div className="space-y-4">
+                      <h3 className="font-medium">SEO 设置</h3>
+                      
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">SEO 标题</label>
+                        <input
+                          type="text"
+                          value={metaTitle}
+                          onChange={(e) => setMetaTitle(e.target.value)}
+                          placeholder="SEO 标题（可选）"
+                          className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">SEO 描述</label>
+                        <textarea
+                          value={metaDescription}
+                          onChange={(e) => setMetaDescription(e.target.value)}
+                          placeholder="SEO 描述（可选）"
+                          className="w-full p-2 border border-input rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Advanced Options */}
+                    {session.user.role === 'ADMIN' && (
+                      <div>
+                        <h3 className="font-medium mb-2">高级选项</h3>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={isFeatured}
+                            onChange={(e) => setIsFeatured(e.target.checked)}
+                            className="rounded border-input"
+                          />
+                          <span className="text-sm">设为推荐文章</span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <div className="h-6 w-px bg-border" />
+
+              <Button
+                variant="ghost"
+                onClick={() => savePost(false)}
+                disabled={saving}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {saving ? '保存中...' : '保存草稿'}
+              </Button>
+
+              <Button
+                onClick={() => savePost(true)}
+                disabled={saving || !title.trim() || !content.trim()}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                发布
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          {/* Title */}
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="文章标题..."
+            className="w-full text-4xl font-bold bg-transparent border-none outline-none placeholder:text-muted-foreground"
+          />
+
+          {/* Editor */}
+          <MarkdownEditor
+            value={content}
+            onChange={setContent}
+            onImageUpload={handleImageUpload}
+            className="min-h-[600px]"
+            placeholder="开始写作你的故事..."
+          />
+        </motion.div>
+      </main>
+
+      {/* Media Library */}
+      <MediaLibrary
+        isOpen={showMediaLibrary}
+        onClose={() => setShowMediaLibrary(false)}
+        onUpload={handleMultipleUpload}
+        onSelect={(file) => {
+          // Insert image into editor
+          const imageMarkdown = `![${file.originalName}](${file.url})`
+          setContent(content + '\n\n' + imageMarkdown)
+        }}
+      />
+    </div>
+  )
+}

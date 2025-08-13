@@ -1,0 +1,397 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// NextAuth.js required models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+// User management
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  bio           String?   @db.Text
+  website       String?
+  location      String?
+  
+  // User roles and status
+  role          Role      @default(USER)
+  isBlocked     Boolean   @default(false)
+  blockReason   String?
+  blockedAt     DateTime?
+  
+  // Social links
+  twitterHandle String?
+  githubHandle  String?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  posts         Post[]
+  comments      Comment[]
+  likes         Like[]
+  bookmarks     Bookmark[]
+  followers     Follow[] @relation("UserFollows")
+  following     Follow[] @relation("UserFollowing")
+  media         Media[]
+  notifications Notification[]
+  pageViews     PageView[]
+  
+  // Admin relations - who blocked this user
+  blockedById   String?
+  blockedBy     User?    @relation("UserBlocked", fields: [blockedById], references: [id])
+  blockedUsers  User[]   @relation("UserBlocked")
+
+  @@map("users")
+}
+
+model Follow {
+  id          String @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollows", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+// Content management
+model Category {
+  id          String @id @default(cuid())
+  name        String @unique
+  slug        String @unique
+  description String?
+  icon        String? // Icon name for UI
+  color       String? // Color theme for category
+  isActive    Boolean @default(true)
+  sortOrder   Int     @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  posts Post[]
+
+  @@map("categories")
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  slug  String @unique
+  count Int    @default(0) // Cache for post count
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  posts PostTag[]
+
+  @@map("tags")
+}
+
+model Post {
+  id          String      @id @default(cuid())
+  title       String
+  slug        String      @unique
+  excerpt     String?     @db.Text
+  content     String      @db.Text
+  
+  // Post metadata
+  status      PostStatus  @default(DRAFT)
+  visibility  Visibility  @default(PUBLIC)
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  
+  // Statistics
+  viewCount    Int @default(0)
+  likeCount    Int @default(0)
+  commentCount Int @default(0)
+  
+  // Featured content
+  isFeatured   Boolean @default(false)
+  isPinned     Boolean @default(false)
+  
+  // Publishing
+  publishedAt DateTime?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Foreign keys
+  authorId   String
+  categoryId String?
+  
+  // Relations
+  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category  Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags      PostTag[]
+  comments  Comment[]
+  likes     Like[]
+  bookmarks Bookmark[]
+  media     PostMedia[]
+
+  @@map("posts")
+}
+
+model PostTag {
+  id     String @id @default(cuid())
+  postId String
+  tagId  String
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, tagId])
+  @@map("post_tags")
+}
+
+// Media management
+model Media {
+  id          String    @id @default(cuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int
+  width       Int?
+  height      Int?
+  url         String
+  thumbnailUrl String?
+  
+  // File metadata
+  alt         String?
+  caption     String?
+  
+  // Upload info
+  uploadedBy  String
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  uploader    User        @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  posts       PostMedia[]
+
+  @@map("media")
+}
+
+model PostMedia {
+  id      String @id @default(cuid())
+  postId  String
+  mediaId String
+  order   Int    @default(0) // For ordering media in posts
+
+  post  Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, mediaId])
+  @@map("post_media")
+}
+
+// Interaction models
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  
+  // Comment status
+  isApproved Boolean @default(false)
+  isDeleted  Boolean @default(false)
+  
+  // Reply system
+  parentId  String?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Foreign keys
+  postId   String
+  authorId String
+  
+  // Relations
+  post     Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("CommentReplies")
+  likes    Like[]
+
+  @@map("comments")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  
+  // What is being liked
+  postId    String?
+  commentId String?
+  
+  // Who liked it
+  userId    String
+  
+  // Timestamp
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  // Ensure user can only like something once
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+  @@map("likes")
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("bookmarks")
+}
+
+// Newsletter and notifications
+model Subscriber {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  isActive    Boolean  @default(true)
+  subscribedAt DateTime @default(now())
+  
+  // Preferences
+  preferences Json? // JSON for flexible subscription preferences
+  
+  @@map("subscribers")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String           @db.Text
+  data      Json?            // Additional data for the notification
+  
+  // Status
+  isRead    Boolean   @default(false)
+  readAt    DateTime?
+  
+  // Recipient
+  userId    String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// Analytics and reporting
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  userAgent String?
+  ipAddress String?
+  referer   String?
+  
+  // User info (if logged in)
+  userId    String?
+  
+  // Timestamps
+  viewedAt  DateTime @default(now())
+  
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("page_views")
+}
+
+// Enums
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  UNLISTED // Can be accessed by direct link but not listed publicly
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
+  MENTION
+  POST_PUBLISHED
+  SYSTEM
+}
