@@ -3,6 +3,9 @@ import { requireAuth, createApiResponse, createErrorResponse } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { slugify } from '@/lib/utils'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 // GET /api/posts - 获取文章列表
 export async function GET(req: NextRequest) {
   try {
