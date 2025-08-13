@@ -1,17 +1,11 @@
 'use client'
 
-import { Metadata } from 'next'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowRight, Cpu, Code, Brain, Zap } from 'lucide-react'
 import { motion } from 'framer-motion'
-
-export const metadata: Metadata = {
-  title: '技术分享 - 个人博客',
-  description: '最新的人工智能、机器学习、前端开发、后端技术分享，探索科技前沿',
-}
 
 const featuredTopics = [
   {
