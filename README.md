@@ -230,6 +230,4 @@ MIT License
 ## 📞 联系
 
 如有问题，请通过以下方式联系：
-- 邮箱: your-email@example.com
-- GitHub: [your-github-username]
-- 网站: [your-website-url]
+- 邮箱: hhk20010515@gmail.com
