@@ -15,6 +15,13 @@ interface PostPageProps {
   }
 }
 
+export async function generateStaticParams() {
+  // Return the list of known slugs for static generation
+  return [
+    { slug: 'gpt-5-gemini-2025-ai-breakthroughs' }
+  ]
+}
+
 export async function generateMetadata({ params }: PostPageProps) {
   const post = await getPostBySlug(params.slug)
   
