@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Metadata } from 'next'
+import { useState, useEffect, Suspense } from 'react'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
@@ -162,7 +161,7 @@ const mockPosts: Post[] = [
   }
 ]
 
-export default function PostsPage() {
+function PostsContent() {
   const searchParams = useSearchParams()
   const [posts, setPosts] = useState<Post[]>(mockPosts)
   const [filteredPosts, setFilteredPosts] = useState<Post[]>(mockPosts)
@@ -445,5 +444,13 @@ export default function PostsPage() {
       </main>
       <Footer />
     </>
+  )
+}
+
+export default function PostsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">加载中...</div>}>
+      <PostsContent />
+    </Suspense>
   )
 }

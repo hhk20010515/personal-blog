@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -29,7 +30,7 @@ const errorMessages = {
   }
 }
 
-export default function AuthError() {
+function AuthErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams?.get('error') as keyof typeof errorMessages
 
@@ -148,5 +149,13 @@ export default function AuthError() {
         </div>
       </motion.div>
     </div>
+  )
+}
+
+export default function AuthError() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">加载中...</div>}>
+      <AuthErrorContent />
+    </Suspense>
   )
 }

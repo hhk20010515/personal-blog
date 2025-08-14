@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { signIn, getSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -9,7 +9,7 @@ import { Mail, Chrome, MessageCircle, ArrowLeft, AlertCircle } from 'lucide-reac
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 
-export default function SignIn() {
+function SignInContent() {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
@@ -279,5 +279,13 @@ export default function SignIn() {
         </div>
       </motion.div>
     </div>
+  )
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">加载中...</div>}>
+      <SignInContent />
+    </Suspense>
   )
 }
