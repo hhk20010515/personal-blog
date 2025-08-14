@@ -57,9 +57,8 @@ export default async function PostPage({ params }: PostPageProps) {
     '@type': 'Article',
     headline: post.title,
     description: post.excerpt,
-    image: post.media[0]?.media.url,
     datePublished: post.publishedAt || post.createdAt,
-    dateModified: post.updatedAt,
+    dateModified: post.updatedAt || post.createdAt,
     author: {
       '@type': 'Person',
       name: post.author.name,
@@ -91,8 +90,8 @@ export default async function PostPage({ params }: PostPageProps) {
       <article className="min-h-screen bg-background">
         <PostHeader post={{
           ...post,
-          createdAt: post.createdAt.toISOString(),
-          publishedAt: post.publishedAt?.toISOString() || null,
+          createdAt: post.createdAt,
+          publishedAt: post.publishedAt || null,
         }} />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -107,8 +106,8 @@ export default async function PostPage({ params }: PostPageProps) {
             <div className="lg:col-span-1">
               <PostSidebar post={{
                 ...post,
-                createdAt: post.createdAt.toISOString(),
-                publishedAt: post.publishedAt?.toISOString() || null,
+                createdAt: post.createdAt,
+                publishedAt: post.publishedAt || null,
               }} />
             </div>
           </div>
