@@ -14,6 +14,10 @@ const nextConfig = {
   async generateBuildId() {
     return 'build-' + Date.now()
   },
+  // Ensure admin routes are treated as pages
+  trailingSlash: false,
+  // Force all routes to be dynamic
+  output: 'standalone',
 }
 
 module.exports = nextConfig
