@@ -20,11 +20,9 @@ export default async function AdminLayout({
   const user = {
     id: 'admin',
     name: session.user.name || 'Administrator',
-    email: session.user.email,
-    image: session.user.image,
-    role: 'ADMIN' as const,
-    isBlocked: false,
-    createdAt: new Date()
+    email: session.user.email || '',
+    image: session.user.image || null,
+    role: 'ADMIN'
   }
 
   return (
