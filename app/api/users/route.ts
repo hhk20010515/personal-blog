@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { requireAdmin, getCurrentUser, createApiResponse, createErrorResponse } from '@/lib/auth'
+import { createApiResponse, createErrorResponse } from '@/lib/auth'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
