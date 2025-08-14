@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
@@ -35,6 +35,7 @@ interface SiteSettings {
 
 export default function AdminSettingsPage() {
   const { data: session, status } = useSession()
+  const router = useRouter()
   const [settings, setSettings] = useState<SiteSettings>({
     siteName: '个人博客',
     siteDescription: '分享技术、摄影和生活感悟的个人博客平台',
@@ -54,12 +55,18 @@ export default function AdminSettingsPage() {
   })
   const [isLoading, setIsLoading] = useState(false)
 
+  useEffect(() => {
+    if (status === 'unauthenticated' || (session && session.user?.role !== 'ADMIN')) {
+      router.push('/auth/signin')
+    }
+  }, [status, session, router])
+
   if (status === 'loading') {
     return <div className="flex items-center justify-center min-h-screen">加载中...</div>
   }
 
-  if (status === 'unauthenticated' || session?.user?.role !== 'ADMIN') {
-    redirect('/auth/signin')
+  if (status === 'unauthenticated' || !session || session.user?.role !== 'ADMIN') {
+    return <div className="flex items-center justify-center min-h-screen">重定向中...</div>
   }
 
   const handleSave = async () => {
