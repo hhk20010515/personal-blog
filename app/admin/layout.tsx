@@ -1,19 +1,31 @@
-import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth.config'
+'use client'
+
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
 
-export default async function AdminLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const session = await getServerSession(authOptions)
+  const { data: session, status } = useSession()
+  const router = useRouter()
 
-  // Redirect if not authenticated or not admin
-  if (!session?.user?.email || session.user.role !== 'ADMIN') {
-    redirect('/auth/signin?callbackUrl=/admin')
+  useEffect(() => {
+    if (status === 'unauthenticated' || (session && session.user?.role !== 'ADMIN')) {
+      router.push('/auth/signin?callbackUrl=/admin')
+    }
+  }, [status, session, router])
+
+  if (status === 'loading') {
+    return <div className="flex items-center justify-center min-h-screen">加载中...</div>
+  }
+
+  if (status === 'unauthenticated' || !session || session.user?.role !== 'ADMIN') {
+    return <div className="flex items-center justify-center min-h-screen">重定向中...</div>
   }
 
   // Create mock user for now to fix build
