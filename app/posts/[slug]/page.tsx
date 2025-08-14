@@ -9,18 +9,16 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { getPostBySlug } from '@/lib/db'
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic'
+
 interface PostPageProps {
   params: {
     slug: string
   }
 }
 
-export async function generateStaticParams() {
-  // Return the list of known slugs for static generation
-  return [
-    { slug: 'gpt-5-gemini-2025-ai-breakthroughs' }
-  ]
-}
+// Remove generateStaticParams to prevent static generation
 
 export async function generateMetadata({ params }: PostPageProps) {
   const post = await getPostBySlug(params.slug)

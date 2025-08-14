@@ -4,6 +4,9 @@ import './globals.css'
 import { cn } from '@/lib/utils'
 import { Providers } from './providers'
 
+// Force dynamic rendering to fix build issues
+export const dynamic = 'force-dynamic'
+
 const inter = Inter({ 
   subsets: ['latin'],
   variable: '--font-inter',
