@@ -1,9 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
-// Force dynamic rendering for admin pages
-export const dynamic = 'force-dynamic'
 import { motion } from 'framer-motion'
 import { 
   FileText, 
