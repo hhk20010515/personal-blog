@@ -21,5 +21,6 @@ declare module 'next-auth/jwt' {
   interface JWT {
     role: 'ADMIN' | 'USER'
     isBlocked: boolean
+    createdAt?: string
   }
 }

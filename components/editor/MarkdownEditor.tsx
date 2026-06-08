@@ -10,7 +10,7 @@ import {
   ListOrdered, 
   Quote, 
   Code, 
-  Image, 
+  Image as ImageIcon, 
   Eye, 
   EyeOff,
   Type,
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { markdownToSafeHtml } from '@/lib/markdown'
 
 interface MarkdownEditorProps {
   value: string
@@ -101,7 +102,7 @@ export default function MarkdownEditor({
       action: () => insertText('[', '](http://)', '链接文字')
     },
     {
-      icon: Image,
+      icon: ImageIcon,
       label: '图片',
       action: () => {
         if (onImageUpload) {
@@ -130,7 +131,7 @@ export default function MarkdownEditor({
   ]
 
   // Handle file upload
-  const handleFileUpload = async (file: File) => {
+  const handleFileUpload = useCallback(async (file: File) => {
     if (!onImageUpload || !file.type.startsWith('image/')) return
 
     try {
@@ -140,7 +141,7 @@ export default function MarkdownEditor({
     } catch (error) {
       console.error('Image upload failed:', error)
     }
-  }
+  }, [insertText, onImageUpload])
 
   // Handle drag and drop
   const handleDrop = useCallback(async (e: React.DragEvent) => {
@@ -153,7 +154,7 @@ export default function MarkdownEditor({
     for (const file of imageFiles) {
       await handleFileUpload(file)
     }
-  }, [onImageUpload])
+  }, [handleFileUpload])
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -164,24 +165,6 @@ export default function MarkdownEditor({
     e.preventDefault()
     setIsDragOver(false)
   }, [])
-
-  // Simple markdown to HTML converter (basic implementation)
-  const markdownToHtml = (text: string) => {
-    return text
-      .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-      .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-      .replace(/\*(.*)\*/gim, '<em>$1</em>')
-      .replace(/`(.*)`/gim, '<code>$1</code>')
-      .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank">$1</a>')
-      .replace(/!\[(.*?)\]\((.*?)\)/gim, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg" />')
-      .replace(/^> (.*)$/gim, '<blockquote class="border-l-4 border-primary pl-4 italic">$1</blockquote>')
-      .replace(/^- (.*)$/gim, '<li>$1</li>')
-      .replace(/(<li>.*<\/li>)/g, '<ul class="list-disc list-inside space-y-1">$1</ul>')
-      .replace(/^\d+\. (.*)$/gim, '<li>$1</li>')
-      .replace(/\n/gim, '<br />')
-  }
 
   return (
     <div className={cn('border border-border rounded-lg overflow-hidden', className)}>
@@ -249,7 +232,7 @@ export default function MarkdownEditor({
                 className="absolute inset-0 bg-primary/10 backdrop-blur-sm flex items-center justify-center border-2 border-dashed border-primary"
               >
                 <div className="text-center">
-                  <Image className="h-12 w-12 mx-auto mb-2 text-primary" />
+                  <ImageIcon className="h-12 w-12 mx-auto mb-2 text-primary" />
                   <p className="text-primary font-medium">拖拽图片到此处上传</p>
                 </div>
               </motion.div>
@@ -258,7 +241,7 @@ export default function MarkdownEditor({
         ) : (
           <div 
             className="p-4 prose prose-sm max-w-none min-h-96"
-            dangerouslySetInnerHTML={{ __html: markdownToHtml(value) }}
+            dangerouslySetInnerHTML={{ __html: markdownToSafeHtml(value) }}
           />
         )}
       </div>

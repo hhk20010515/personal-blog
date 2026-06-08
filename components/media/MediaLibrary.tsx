@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Upload, 
@@ -76,8 +76,14 @@ export default function MediaLibrary({
     }
   }, [])
 
+  useEffect(() => {
+    if (isOpen) {
+      loadFiles()
+    }
+  }, [isOpen, loadFiles])
+
   // Handle file upload
-  const handleUpload = async (uploadFiles: File[]) => {
+  const handleUpload = useCallback(async (uploadFiles: File[]) => {
     if (!onUpload) return
 
     setUploading(true)
@@ -99,7 +105,7 @@ export default function MediaLibrary({
     } finally {
       setUploading(false)
     }
-  }
+  }, [onUpload, toast])
 
   // Handle drag and drop
   const handleDrop = useCallback(async (e: React.DragEvent) => {
@@ -110,7 +116,7 @@ export default function MediaLibrary({
     if (droppedFiles.length > 0) {
       await handleUpload(droppedFiles)
     }
-  }, [onUpload])
+  }, [handleUpload])
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -170,6 +176,38 @@ export default function MediaLibrary({
       toast({
         title: '复制失败',
         description: '请手动复制链接',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const deleteFile = async (file: MediaFile) => {
+    if (!confirm(`确定要删除「${file.originalName}」吗？`)) return
+
+    try {
+      const response = await fetch(`/api/upload?id=${encodeURIComponent(file.id)}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => null)
+        throw new Error(error?.error || 'Delete failed')
+      }
+
+      setFiles((prev) => prev.filter((item) => item.id !== file.id))
+      setSelectedFiles((prev) => {
+        const next = new Set(prev)
+        next.delete(file.id)
+        return next
+      })
+      toast({
+        title: '删除成功',
+        description: '媒体文件已删除'
+      })
+    } catch (error: any) {
+      toast({
+        title: '删除失败',
+        description: error.message || '请稍后重试',
         variant: 'destructive'
       })
     }
@@ -340,7 +378,7 @@ export default function MediaLibrary({
                           className="text-destructive"
                           onClick={(e) => {
                             e.stopPropagation()
-                            // Handle delete
+                            deleteFile(file)
                           }}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
@@ -413,7 +451,7 @@ export default function MediaLibrary({
                         className="text-destructive"
                         onClick={(e) => {
                           e.stopPropagation()
-                          // Handle delete
+                          deleteFile(file)
                         }}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />

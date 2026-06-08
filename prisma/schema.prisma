@@ -87,6 +87,7 @@ model User {
   media         Media[]
   notifications Notification[]
   pageViews     PageView[]
+  newsletters   NewsletterIssue[]
   
   // Admin relations - who blocked this user
   blockedById   String?
@@ -158,6 +159,19 @@ model Post {
   // SEO
   metaTitle       String?
   metaDescription String?
+
+  // Photography metadata
+  camera       String?
+  lens         String?
+  focalLength  String?
+  aperture     String?
+  shutterSpeed String?
+  iso          Int?
+  takenAt      DateTime?
+  locationName String?
+  locationLat  Float?
+  locationLng  Float?
+  photoSeries  String?
   
   // Statistics
   viewCount    Int @default(0)
@@ -319,11 +333,34 @@ model Subscriber {
   email       String   @unique
   isActive    Boolean  @default(true)
   subscribedAt DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
   
   // Preferences
   preferences Json? // JSON for flexible subscription preferences
   
   @@map("subscribers")
+}
+
+model NewsletterIssue {
+  id          String           @id @default(cuid())
+  title       String
+  subject     String
+  content     String           @db.Text
+  status      NewsletterStatus @default(DRAFT)
+  scheduledAt DateTime?
+  sentAt      DateTime?
+
+  recipients Int @default(0)
+  opens      Int @default(0)
+  clicks     Int @default(0)
+
+  createdById String?
+  createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("newsletter_issues")
 }
 
 model Notification {
@@ -394,4 +431,10 @@ enum NotificationType {
   MENTION
   POST_PUBLISHED
   SYSTEM
+}
+
+enum NewsletterStatus {
+  DRAFT
+  SCHEDULED
+  SENT
 }

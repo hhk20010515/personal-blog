@@ -1,6 +1,6 @@
 'use client'
 
-import { Metadata } from 'next'
+import { useEffect, useState } from 'react'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
@@ -80,7 +80,52 @@ const notablePhotographers = [
   }
 ]
 
+interface PhotographyPost {
+  id: string
+  title: string
+  slug: string
+  excerpt: string | null
+	  publishedAt: string | null
+	  createdAt: string
+	  camera?: string | null
+	  lens?: string | null
+	  focalLength?: string | null
+	  aperture?: string | null
+	  shutterSpeed?: string | null
+	  iso?: number | null
+	  takenAt?: string | null
+	  locationName?: string | null
+	  photoSeries?: string | null
+	  media: Array<{
+    media: {
+      url: string
+      alt?: string | null
+    }
+  }>
+}
+
 export default function PhotographyPage() {
+  const [latestPosts, setLatestPosts] = useState<PhotographyPost[]>([])
+
+  const getPhotoSummary = (post: PhotographyPost) => {
+    return [post.camera, post.lens, post.focalLength, post.locationName]
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(' · ')
+  }
+
+  useEffect(() => {
+    const loadLatestPhotography = async () => {
+      const response = await fetch('/api/posts?category=photography&limit=6')
+      if (!response.ok) return
+
+      const data = await response.json()
+      setLatestPosts(data.posts)
+    }
+
+    loadLatestPhotography()
+  }, [])
+
   return (
     <>
       <Header />
@@ -139,6 +184,73 @@ export default function PhotographyPage() {
             </div>
           </div>
         </section>
+
+        {latestPosts.length > 0 && (
+          <section className="py-16 bg-muted/5">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+                className="text-center mb-12"
+              >
+                <h2 className="text-3xl font-bold mb-4">最新摄影作品</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto">
+                  从真实发布内容中生成的摄影作品入口
+                </p>
+              </motion.div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {latestPosts.map((post, index) => (
+                  <motion.article
+                    key={post.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.08 }}
+                    viewport={{ once: true }}
+                    className="group"
+                  >
+                    <Link href={`/posts/${post.slug}`}>
+                      <div className="glass-effect rounded-xl overflow-hidden card-hover h-full">
+                        <div className="aspect-[4/3] bg-muted relative overflow-hidden">
+                          {post.media[0]?.media.url ? (
+                            <img
+                              src={post.media[0].media.url}
+                              alt={post.media[0].media.alt || post.title}
+                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-gradient-to-br from-amber-500/20 to-rose-500/20" />
+                          )}
+                        </div>
+                        <div className="p-6">
+	                          <p className="text-xs text-muted-foreground mb-2">
+	                            {new Date(post.publishedAt || post.createdAt).toLocaleDateString('zh-CN')}
+	                          </p>
+	                          {getPhotoSummary(post) && (
+	                            <p className="text-xs text-primary mb-2 flex items-center gap-1">
+	                              <Camera className="h-3 w-3" />
+	                              {getPhotoSummary(post)}
+	                            </p>
+	                          )}
+	                          <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
+                            {post.title}
+                          </h3>
+                          {post.excerpt && (
+                            <p className="text-muted-foreground text-sm line-clamp-2">
+                              {post.excerpt}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.article>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* 2025 Photography Trends */}
         <section className="py-16 bg-muted/5">

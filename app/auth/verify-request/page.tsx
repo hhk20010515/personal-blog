@@ -6,6 +6,8 @@ import { Mail, ArrowLeft, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default function VerifyRequest() {
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Kai 的摄影博客'
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20 px-4">
       <motion.div
@@ -39,7 +41,7 @@ export default function VerifyRequest() {
             className="mb-8"
           >
             <Link href="/" className="inline-block mb-6">
-              <span className="text-2xl font-bold gradient-text">Personal Blog</span>
+              <span className="text-2xl font-bold gradient-text">{siteName}</span>
             </Link>
           </motion.div>
 

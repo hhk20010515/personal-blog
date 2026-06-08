@@ -27,20 +27,21 @@ const navigation = {
 const socialLinks = [
   {
     name: 'GitHub',
-    href: 'https://github.com',
+    href: process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com',
     icon: Github,
   },
   {
     name: 'Twitter',
-    href: 'https://twitter.com',
+    href: process.env.NEXT_PUBLIC_TWITTER_URL || 'https://twitter.com',
     icon: Twitter,
   },
   {
     name: 'Email',
-    href: 'mailto:hello@example.com',
+    href: `mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@example.com'}`,
     icon: Mail,
   },
 ]
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Kai 的摄影博客'
 
 export default function Footer() {
   return (
@@ -50,7 +51,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link href="/" className="inline-block mb-4">
-              <span className="text-2xl font-bold gradient-text">Personal Blog</span>
+              <span className="text-2xl font-bold gradient-text">{siteName}</span>
             </Link>
             <p className="text-foreground/70 mb-6 max-w-md">
               分享计算机技术、摄影艺术和生活感悟的个人博客平台。
@@ -116,7 +117,7 @@ export default function Footer() {
         {/* Bottom Section */}
         <div className="border-t border-border/40 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center text-sm text-foreground/60 mb-4 md:mb-0">
-            <span>© 2024 Personal Blog. 保留所有权利.</span>
+            <span>© {new Date().getFullYear()} Kai 的摄影博客. 保留所有权利.</span>
           </div>
 
           <div className="flex items-center space-x-6">

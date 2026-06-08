@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Calendar, Clock, User, Tag, Folder, Share2, Coffee } from 'lucide-react'
+import { Aperture, Calendar, Camera, Clock, Coffee, Folder, MapPin, Share2, Tag, User } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { formatDate } from '@/lib/utils'
@@ -28,18 +28,38 @@ interface PostSidebarProps {
       slug: string
       color?: string | null
     } | null
-    tags: Array<{
-      tag: {
-        id: string
-        name: string
-        slug: string
-      }
-    }>
-  }
-}
+	    tags: Array<{
+	      tag: {
+	        id: string
+	        name: string
+	        slug: string
+	      }
+	    }>
+	    camera?: string | null
+	    lens?: string | null
+	    focalLength?: string | null
+	    aperture?: string | null
+	    shutterSpeed?: string | null
+	    iso?: number | null
+	    takenAt?: string | null
+	    locationName?: string | null
+	    photoSeries?: string | null
+	  }
+	}
 
 export default function PostSidebar({ post }: PostSidebarProps) {
   const readingTime = Math.ceil(post.title.length / 200) // Rough estimate
+  const photoDetails = [
+    { label: '相机', value: post.camera },
+    { label: '镜头', value: post.lens },
+    { label: '焦段', value: post.focalLength },
+    { label: '光圈', value: post.aperture },
+    { label: '快门', value: post.shutterSpeed },
+    { label: 'ISO', value: post.iso ? String(post.iso) : null },
+    { label: '拍摄时间', value: post.takenAt ? formatDate(post.takenAt) : null },
+    { label: '地点', value: post.locationName },
+    { label: '系列', value: post.photoSeries },
+  ].filter((item) => item.value)
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -171,6 +191,39 @@ export default function PostSidebar({ post }: PostSidebarProps) {
           </div>
         </div>
       </motion.div>
+
+      {/* Photography Metadata */}
+      {photoDetails.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="glass-effect rounded-xl p-6"
+        >
+          <h3 className="font-semibold mb-4 flex items-center">
+            <Camera className="h-5 w-5 mr-2" />
+            拍摄信息
+          </h3>
+
+          <div className="space-y-3">
+            {photoDetails.map((detail) => (
+              <div key={detail.label} className="flex items-start text-sm">
+                {detail.label === '地点' ? (
+                  <MapPin className="h-4 w-4 mr-3 mt-0.5 text-muted-foreground" />
+                ) : detail.label === '光圈' ? (
+                  <Aperture className="h-4 w-4 mr-3 mt-0.5 text-muted-foreground" />
+                ) : (
+                  <Camera className="h-4 w-4 mr-3 mt-0.5 text-muted-foreground" />
+                )}
+                <div>
+                  <p className="font-medium">{detail.label}</p>
+                  <p className="text-muted-foreground">{detail.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Tags */}
       {post.tags.length > 0 && (

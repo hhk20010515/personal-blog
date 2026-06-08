@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Header from '@/components/layout/Header'
@@ -19,20 +19,20 @@ import {
   Calendar, 
   TrendingUp, 
   Eye, 
-  MousePointer,
-  FileText,
-  Plus,
-  Edit3,
-  Trash2
+	  MousePointer,
+	  Plus,
+	  Edit3,
+	  Trash2
 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useToast } from '@/hooks/use-toast'
 
 interface Newsletter {
   id: string
   title: string
   subject: string
   content: string
-  status: 'draft' | 'scheduled' | 'sent'
+  status: 'DRAFT' | 'SCHEDULED' | 'SENT'
   createdAt: string
   scheduledAt?: string
   sentAt?: string
@@ -50,85 +50,63 @@ interface Subscriber {
   tags: string[]
 }
 
-const mockNewsletters: Newsletter[] = [
-  {
-    id: '1',
-    title: '2025年1月技术趋势回顾',
-    subject: 'GPT-5发布，AI技术新突破 | 月度技术回顾',
-    content: '本月我们见证了GPT-5的正式发布...',
-    status: 'sent',
-    createdAt: '2025-01-10T10:00:00Z',
-    sentAt: '2025-01-10T18:00:00Z',
-    recipients: 1250,
-    opens: 890,
-    clicks: 156
-  },
-  {
-    id: '2',
-    title: '摄影技巧分享专刊',
-    subject: '街头摄影的7个秘密技巧',
-    content: '今天分享一些街头摄影的实用技巧...',
-    status: 'scheduled',
-    createdAt: '2025-01-12T14:00:00Z',
-    scheduledAt: '2025-01-15T09:00:00Z',
-    recipients: 1250
-  },
-  {
-    id: '3',
-    title: '生活感悟与正念练习',
-    subject: '在快节奏生活中寻找内心平静',
-    content: '分享一些正念练习的方法...',
-    status: 'draft',
-    createdAt: '2025-01-13T11:00:00Z',
-    recipients: 0
-  }
-]
-
-const mockSubscribers: Subscriber[] = [
-  {
-    id: '1',
-    email: 'user1@example.com',
-    name: '张三',
-    subscribed: true,
-    subscribedAt: '2025-01-01T10:00:00Z',
-    tags: ['技术', '摄影']
-  },
-  {
-    id: '2',
-    email: 'user2@example.com',
-    name: '李四',
-    subscribed: true,
-    subscribedAt: '2024-12-15T15:30:00Z',
-    tags: ['生活', '哲学']
-  },
-  {
-    id: '3',
-    email: 'user3@example.com',
-    subscribed: false,
-    subscribedAt: '2024-11-20T09:15:00Z',
-    tags: ['技术']
-  }
-]
-
 export default function AdminNewsletterPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [newsletters, setNewsletters] = useState<Newsletter[]>(mockNewsletters)
-  const [subscribers, setSubscribers] = useState<Subscriber[]>(mockSubscribers)
+  const { toast } = useToast()
+  const [newsletters, setNewsletters] = useState<Newsletter[]>([])
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([])
   const [isCreating, setIsCreating] = useState(false)
-  const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletter | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [sendingId, setSendingId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
 
-  const [newNewsletter, setNewNewsletter] = useState({
-    title: '',
-    subject: '',
-    content: ''
-  })
+	  const [newNewsletter, setNewNewsletter] = useState({
+	    title: '',
+	    subject: '',
+	    content: ''
+	  })
+
+  const resetNewsletterForm = () => {
+    setNewNewsletter({ title: '', subject: '', content: '' })
+    setEditingId(null)
+    setIsCreating(false)
+  }
 
   useEffect(() => {
     if (status === 'unauthenticated' || (session && session.user?.role !== 'ADMIN')) {
       router.push('/auth/signin')
     }
   }, [status, session, router])
+
+  const loadNewsletters = useCallback(async () => {
+    const response = await fetch('/api/newsletters')
+    if (!response.ok) return
+
+    const data = await response.json()
+    setNewsletters(data.newsletters)
+  }, [])
+
+  const loadSubscribers = useCallback(async () => {
+      const response = await fetch('/api/newsletter/subscribe')
+      if (!response.ok) return
+
+      const data = await response.json()
+      setSubscribers(data.subscribers.map((subscriber: any) => ({
+        id: subscriber.id,
+        email: subscriber.email,
+        subscribed: subscriber.isActive,
+        subscribedAt: subscriber.subscribedAt,
+        tags: subscriber.preferences?.categories || [],
+      })))
+  }, [])
+
+  useEffect(() => {
+    if (session?.user?.role === 'ADMIN') {
+      loadNewsletters()
+      loadSubscribers()
+    }
+  }, [session, loadNewsletters, loadSubscribers])
 
   if (status === 'loading') {
     return <div className="flex items-center justify-center min-h-screen">加载中...</div>
@@ -140,11 +118,11 @@ export default function AdminNewsletterPage() {
 
   const getStatusBadge = (status: Newsletter['status']) => {
     switch (status) {
-      case 'sent':
+      case 'SENT':
         return <Badge className="bg-green-500">已发送</Badge>
-      case 'scheduled':
+      case 'SCHEDULED':
         return <Badge className="bg-blue-500">已安排</Badge>
-      case 'draft':
+      case 'DRAFT':
         return <Badge variant="outline">草稿</Badge>
       default:
         return null
@@ -161,27 +139,149 @@ export default function AdminNewsletterPage() {
     })
   }
 
-  const totalSubscribers = subscribers.filter(s => s.subscribed).length
-  const totalSent = newsletters.filter(n => n.status === 'sent').length
-  const avgOpenRate = newsletters
-    .filter(n => n.status === 'sent' && n.opens && n.recipients)
+	  const totalSubscribers = subscribers.filter(s => s.subscribed).length
+	  const totalSent = newsletters.filter(n => n.status === 'SENT').length
+  const monthlyNewSubscribers = subscribers.filter((subscriber) => {
+    const subscribedAt = new Date(subscriber.subscribedAt)
+    const now = new Date()
+    return (
+      subscribedAt.getFullYear() === now.getFullYear() &&
+      subscribedAt.getMonth() === now.getMonth()
+    )
+  }).length
+	  const avgOpenRate = newsletters
+    .filter(n => n.status === 'SENT' && n.opens && n.recipients)
     .reduce((acc, n) => acc + (n.opens! / n.recipients), 0) / totalSent || 0
 
-  const handleCreateNewsletter = () => {
-    // In real app, this would make an API call
-    const newsletter: Newsletter = {
-      id: Date.now().toString(),
-      ...newNewsletter,
-      status: 'draft',
-      createdAt: new Date().toISOString(),
-      recipients: 0
+	  const handleSaveNewsletter = async () => {
+    if (!newNewsletter.title.trim() || !newNewsletter.subject.trim() || !newNewsletter.content.trim()) {
+      toast({
+        title: '请填写完整内容',
+        description: '标题、主题和正文不能为空',
+        variant: 'destructive',
+      })
+      return
     }
-    setNewsletters([newsletter, ...newsletters])
-    setNewNewsletter({ title: '', subject: '', content: '' })
-    setIsCreating(false)
+
+    setIsSaving(true)
+
+	    try {
+	      const response = await fetch(editingId ? `/api/newsletters/${editingId}` : '/api/newsletters', {
+	        method: editingId ? 'PATCH' : 'POST',
+	        headers: {
+	          'Content-Type': 'application/json',
+	        },
+	        body: JSON.stringify(newNewsletter),
+	      })
+
+      if (!response.ok) {
+        throw new Error('Create newsletter failed')
+      }
+
+	      const newsletter = await response.json()
+	      setNewsletters((current) =>
+	        editingId
+	          ? current.map((item) => (item.id === editingId ? newsletter : item))
+	          : [newsletter, ...current]
+	      )
+	      resetNewsletterForm()
+	      toast({ title: editingId ? '通讯已更新' : '草稿已创建' })
+    } catch (error) {
+      toast({
+        title: '创建失败',
+        description: '无法创建邮件通讯，请稍后重试',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  return (
+  const handleSendNewsletter = async (newsletterId: string) => {
+    setSendingId(newsletterId)
+
+    try {
+      const response = await fetch(`/api/newsletters/${newsletterId}/send`, {
+        method: 'POST',
+      })
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Send newsletter failed')
+      }
+
+      setNewsletters((current) =>
+        current.map((newsletter) =>
+          newsletter.id === newsletterId ? data.newsletter : newsletter
+        )
+      )
+      toast({
+        title: '发送完成',
+        description: `成功发送给 ${data.sentCount} 个订阅者`,
+      })
+    } catch (error: any) {
+      toast({
+        title: '发送失败',
+        description: error.message || '请检查 SMTP 配置后重试',
+        variant: 'destructive',
+      })
+    } finally {
+      setSendingId(null)
+    }
+  }
+
+	  const handleDeleteNewsletter = async (newsletterId: string) => {
+    if (!confirm('确定删除这封邮件通讯吗？')) return
+
+    const response = await fetch(`/api/newsletters/${newsletterId}`, {
+      method: 'DELETE',
+    })
+
+	    if (response.ok) {
+	      setNewsletters(newsletters.filter((newsletter) => newsletter.id !== newsletterId))
+	      toast({ title: '已删除' })
+		  }
+  }
+
+	  const handleToggleSubscriber = async (subscriber: Subscriber) => {
+    try {
+      const response = subscriber.subscribed
+        ? await fetch(`/api/newsletter/subscribe?email=${encodeURIComponent(subscriber.email)}`, {
+            method: 'DELETE',
+          })
+        : await fetch('/api/newsletter/subscribe', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: subscriber.email,
+              preferences: {
+                categories: subscriber.tags,
+              },
+            }),
+          })
+
+      if (!response.ok) {
+        throw new Error('Update subscriber failed')
+      }
+
+      setSubscribers((current) =>
+        current.map((item) =>
+          item.id === subscriber.id ? { ...item, subscribed: !subscriber.subscribed } : item
+        )
+      )
+      toast({ title: subscriber.subscribed ? '已退订' : '已重新订阅' })
+    } catch (error) {
+      toast({
+        title: '操作失败',
+        description: '无法更新订阅状态',
+        variant: 'destructive',
+      })
+    }
+	  }
+
+	  return (
     <>
       <Header />
       <main className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background">
@@ -198,7 +298,13 @@ export default function AdminNewsletterPage() {
                   管理邮件订阅和发送通讯给用户
                 </p>
               </div>
-              <Button onClick={() => setIsCreating(true)}>
+	              <Button
+	                onClick={() => {
+	                  setEditingId(null)
+	                  setNewNewsletter({ title: '', subject: '', content: '' })
+	                  setIsCreating(true)
+	                }}
+	              >
                 <Plus className="h-4 w-4 mr-2" />
                 创建通讯
               </Button>
@@ -243,8 +349,8 @@ export default function AdminNewsletterPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">本月增长</p>
-                      <p className="text-2xl font-bold">+12%</p>
+	                      <p className="text-sm text-muted-foreground">本月新增</p>
+	                      <p className="text-2xl font-bold">{monthlyNewSubscribers}</p>
                     </div>
                     <TrendingUp className="h-8 w-8 text-muted-foreground" />
                   </div>
@@ -253,11 +359,10 @@ export default function AdminNewsletterPage() {
             </div>
 
             <Tabs defaultValue="newsletters" className="space-y-6">
-              <TabsList>
-                <TabsTrigger value="newsletters">邮件列表</TabsTrigger>
-                <TabsTrigger value="subscribers">订阅管理</TabsTrigger>
-                <TabsTrigger value="templates">邮件模板</TabsTrigger>
-              </TabsList>
+	                <TabsList>
+	                  <TabsTrigger value="newsletters">邮件列表</TabsTrigger>
+	                  <TabsTrigger value="subscribers">订阅管理</TabsTrigger>
+	                </TabsList>
 
               {/* Newsletters Tab */}
               <TabsContent value="newsletters">
@@ -271,7 +376,9 @@ export default function AdminNewsletterPage() {
                   <CardContent>
                     {isCreating && (
                       <div className="mb-6 p-6 border border-dashed rounded-lg">
-                        <h3 className="text-lg font-semibold mb-4">创建新通讯</h3>
+	                        <h3 className="text-lg font-semibold mb-4">
+	                          {editingId ? '编辑通讯' : '创建新通讯'}
+	                        </h3>
                         <div className="space-y-4">
                           <div className="space-y-2">
                             <Label>标题</Label>
@@ -298,20 +405,25 @@ export default function AdminNewsletterPage() {
                               rows={6}
                             />
                           </div>
-                          <div className="flex gap-2">
-                            <Button onClick={handleCreateNewsletter}>
-                              创建草稿
-                            </Button>
-                            <Button variant="outline" onClick={() => setIsCreating(false)}>
-                              取消
-                            </Button>
+	                          <div className="flex gap-2">
+	                            <Button onClick={handleSaveNewsletter} disabled={isSaving}>
+	                              {isSaving ? '保存中...' : editingId ? '保存修改' : '创建草稿'}
+	                            </Button>
+	                            <Button variant="outline" onClick={resetNewsletterForm}>
+	                              取消
+	                            </Button>
                           </div>
                         </div>
                       </div>
                     )}
 
-                    <div className="space-y-4">
-                      {newsletters.map((newsletter) => (
+	                    <div className="space-y-4">
+	                      {newsletters.length === 0 && (
+	                        <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+	                          暂无邮件通讯
+	                        </div>
+	                      )}
+	                      {newsletters.map((newsletter) => (
                         <div key={newsletter.id} className="flex items-center justify-between p-4 border rounded-lg">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
@@ -324,7 +436,7 @@ export default function AdminNewsletterPage() {
                                 <Calendar className="h-3 w-3" />
                                 {formatDate(newsletter.createdAt)}
                               </span>
-                              {newsletter.status === 'sent' && (
+                              {newsletter.status === 'SENT' && (
                                 <>
                                   <span className="flex items-center gap-1">
                                     <Users className="h-3 w-3" />
@@ -343,30 +455,53 @@ export default function AdminNewsletterPage() {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            {newsletter.status === 'draft' && (
+                            {newsletter.status === 'DRAFT' && (
                               <>
-                                <Button size="sm" variant="outline">
-                                  <Edit3 className="h-4 w-4 mr-1" />
-                                  编辑
-                                </Button>
-                                <Button size="sm">
+	                                <Button
+	                                  size="sm"
+	                                  variant="outline"
+	                                  onClick={() => {
+	                                    setEditingId(newsletter.id)
+	                                    setNewNewsletter({
+	                                      title: newsletter.title,
+	                                      subject: newsletter.subject,
+	                                      content: newsletter.content,
+	                                    })
+	                                    setIsCreating(true)
+	                                  }}
+	                                >
+	                                  <Edit3 className="h-4 w-4 mr-1" />
+	                                  编辑
+	                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleSendNewsletter(newsletter.id)}
+                                  disabled={sendingId === newsletter.id}
+                                >
                                   <Send className="h-4 w-4 mr-1" />
-                                  发送
+                                  {sendingId === newsletter.id ? '发送中' : '发送'}
                                 </Button>
                               </>
                             )}
-                            {newsletter.status === 'scheduled' && (
-                              <Button size="sm" variant="outline">
-                                编辑计划
-                              </Button>
-                            )}
-                            {newsletter.status === 'sent' && (
-                              <Button size="sm" variant="outline">
-                                查看报告
-                              </Button>
-                            )}
-                            <Button size="sm" variant="ghost">
-                              <Trash2 className="h-4 w-4" />
+	                            {newsletter.status === 'SCHEDULED' && (
+	                              <Button
+	                                size="sm"
+	                                variant="outline"
+	                                onClick={() => {
+	                                  setEditingId(newsletter.id)
+	                                  setNewNewsletter({
+	                                    title: newsletter.title,
+	                                    subject: newsletter.subject,
+	                                    content: newsletter.content,
+	                                  })
+	                                  setIsCreating(true)
+	                                }}
+	                              >
+	                                编辑计划
+	                              </Button>
+	                            )}
+	                            <Button size="sm" variant="ghost" onClick={() => handleDeleteNewsletter(newsletter.id)}>
+	                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
@@ -386,8 +521,13 @@ export default function AdminNewsletterPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {subscribers.map((subscriber) => (
+	                    <div className="space-y-4">
+	                      {subscribers.length === 0 && (
+	                        <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+	                          暂无订阅者
+	                        </div>
+	                      )}
+	                      {subscribers.map((subscriber) => (
                         <div key={subscriber.id} className="flex items-center justify-between p-4 border rounded-lg">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
@@ -412,84 +552,28 @@ export default function AdminNewsletterPage() {
                               </div>
                             </div>
                           </div>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline">
-                              编辑
-                            </Button>
-                            {subscriber.subscribed ? (
-                              <Button size="sm" variant="ghost">
-                                退订
-                              </Button>
-                            ) : (
-                              <Button size="sm">
-                                重新订阅
-                              </Button>
-                            )}
-                          </div>
+	                          <div className="flex gap-2">
+	                            {subscriber.subscribed ? (
+	                              <Button
+	                                size="sm"
+	                                variant="ghost"
+	                                onClick={() => handleToggleSubscriber(subscriber)}
+	                              >
+	                                退订
+	                              </Button>
+	                            ) : (
+	                              <Button size="sm" onClick={() => handleToggleSubscriber(subscriber)}>
+	                                重新订阅
+	                              </Button>
+	                            )}
+	                          </div>
                         </div>
                       ))}
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
-
-              {/* Templates Tab */}
-              <TabsContent value="templates">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>邮件模板</CardTitle>
-                    <CardDescription>
-                      创建和管理邮件模板，提高发送效率
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div className="border border-dashed rounded-lg p-6 text-center">
-                        <FileText className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                        <h4 className="font-medium mb-2">创建新模板</h4>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          创建可重用的邮件模板
-                        </p>
-                        <Button size="sm">
-                          <Plus className="h-4 w-4 mr-1" />
-                          创建模板
-                        </Button>
-                      </div>
-
-                      <div className="border rounded-lg p-4">
-                        <h4 className="font-medium mb-2">技术周报模板</h4>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          用于技术内容的周报邮件模板
-                        </p>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
-                            编辑
-                          </Button>
-                          <Button size="sm">
-                            使用
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="border rounded-lg p-4">
-                        <h4 className="font-medium mb-2">摄影分享模板</h4>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          用于摄影作品分享的邮件模板
-                        </p>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
-                            编辑
-                          </Button>
-                          <Button size="sm">
-                            使用
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+	            </Tabs>
           </motion.div>
         </div>
       </main>

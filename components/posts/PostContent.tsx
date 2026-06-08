@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/hooks/use-toast'
 import Image from 'next/image'
+import { markdownToSafeHtml } from '@/lib/markdown'
 
 interface PostContentProps {
   post: {
@@ -52,6 +53,24 @@ export default function PostContent({ post }: PostContentProps) {
     }
 
     checkLikeStatus()
+  }, [session, post.slug])
+
+  useEffect(() => {
+    const checkBookmarkStatus = async () => {
+      if (!session?.user) return
+
+      try {
+        const response = await fetch(`/api/posts/${post.slug}/bookmark`)
+        if (response.ok) {
+          const data = await response.json()
+          setIsBookmarked(data.bookmarked)
+        }
+      } catch (error) {
+        console.error('Failed to check bookmark status:', error)
+      }
+    }
+
+    checkBookmarkStatus()
   }, [session, post.slug])
 
   // Handle scroll to show scroll-to-top button
@@ -110,12 +129,28 @@ export default function PostContent({ post }: PostContentProps) {
       return
     }
 
-    // Bookmark functionality would be implemented similarly to like
-    setIsBookmarked(!isBookmarked)
-    toast({
-      title: isBookmarked ? '取消收藏' : '收藏成功',
-      description: isBookmarked ? '已从收藏中移除' : '已添加到收藏'
-    })
+    try {
+      const response = await fetch(`/api/posts/${post.slug}/bookmark`, {
+        method: 'POST'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setIsBookmarked(data.bookmarked)
+        toast({
+          title: data.bookmarked ? '收藏成功' : '取消收藏',
+          description: data.bookmarked ? '已添加到收藏' : '已从收藏中移除'
+        })
+      } else {
+        throw new Error('Bookmark action failed')
+      }
+    } catch (error) {
+      toast({
+        title: '操作失败',
+        description: '请稍后重试',
+        variant: 'destructive'
+      })
+    }
   }
 
   const handleShare = async () => {
@@ -144,26 +179,6 @@ export default function PostContent({ post }: PostContentProps) {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  // Convert markdown to HTML (basic implementation)
-  const markdownToHtml = (text: string) => {
-    return text
-      .replace(/^### (.*$)/gim, '<h3 class="text-2xl font-bold mb-4 mt-8">$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2 class="text-3xl font-bold mb-6 mt-10">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 class="text-4xl font-bold mb-8 mt-12">$1</h1>')
-      .replace(/\*\*(.*)\*\*/gim, '<strong class="font-semibold">$1</strong>')
-      .replace(/\*(.*)\*/gim, '<em class="italic">$1</em>')
-      .replace(/`(.*?)`/gim, '<code class="px-2 py-1 bg-muted rounded text-sm font-mono">$1</code>')
-      .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline font-medium">$1</a>')
-      .replace(/!\[(.*?)\]\((.*?)\)/gim, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg shadow-md my-6" />')
-      .replace(/^> (.*)$/gim, '<blockquote class="border-l-4 border-primary pl-6 py-2 bg-muted/30 rounded-r-lg my-6 italic">$1</blockquote>')
-      .replace(/^- (.*)$/gim, '<li class="ml-4">$1</li>')
-      .replace(/(<li>.*<\/li>)/g, '<ul class="list-disc list-inside space-y-2 my-4">$1</ul>')
-      .replace(/^\d+\. (.*)$/gim, '<li class="ml-4">$1</li>')
-      .replace(/```([^`]+)```/gim, '<pre class="bg-muted p-4 rounded-lg overflow-x-auto my-6"><code>$1</code></pre>')
-      .replace(/\n\n/gim, '</p><p class="mb-4">')
-      .replace(/\n/gim, '<br />')
   }
 
   return (
@@ -241,7 +256,7 @@ export default function PostContent({ post }: PostContentProps) {
         <div
           className="prose-headings:gradient-text prose-headings:font-bold prose-p:text-foreground/90 prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-foreground prose-blockquote:border-primary prose-blockquote:bg-muted/30 prose-code:bg-muted prose-code:text-foreground prose-pre:bg-muted prose-img:rounded-lg prose-img:shadow-md"
           dangerouslySetInnerHTML={{ 
-            __html: `<p class="mb-4">${markdownToHtml(post.content)}</p>` 
+            __html: markdownToSafeHtml(post.content)
           }}
         />
       </motion.div>

@@ -49,9 +49,13 @@ export function formatRelativeTime(date: Date | string | number) {
 
 export function slugify(text: string) {
   return text
+    .trim()
     .toLowerCase()
-    .replace(/[^\w ]+/g, '')
-    .replace(/ +/g, '-')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-')
 }
 
 export function truncateText(text: string, maxLength: number) {

@@ -24,6 +24,7 @@ const navigation = [
   { name: '生活', href: '/life' },
   { name: '关于', href: '/about' },
 ]
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Kai 的摄影博客'
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -57,7 +58,7 @@ export default function Header() {
               whileTap={{ scale: 0.95 }}
               className="text-2xl font-bold gradient-text"
             >
-              Personal Blog
+              {siteName}
             </motion.div>
           </Link>
 
@@ -122,12 +123,14 @@ export default function Header() {
                       个人资料
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/write" className="flex items-center">
-                      <PenTool className="mr-2 h-4 w-4" />
-                      写文章
-                    </Link>
-                  </DropdownMenuItem>
+                  {session.user.role === 'ADMIN' && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/write" className="flex items-center">
+                        <PenTool className="mr-2 h-4 w-4" />
+                        写文章
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link href="/settings" className="flex items-center">
                       <Settings className="mr-2 h-4 w-4" />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Search,
@@ -73,7 +73,7 @@ export default function AdminUsers() {
 
   const { toast } = useToast()
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -101,11 +101,60 @@ export default function AdminUsers() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, roleFilter, searchQuery, statusFilter, toast])
 
   useEffect(() => {
     loadUsers()
-  }, [page, searchQuery, roleFilter, statusFilter])
+  }, [loadUsers])
+
+  const performUserAction = async (
+    action: 'block' | 'unblock' | 'promote' | 'demote',
+    userIds: string[],
+    reason?: string
+  ) => {
+    if (userIds.length === 0) {
+      toast({
+        title: '请选择用户',
+        description: '请至少选择一个用户进行操作',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    try {
+      const response = await fetch('/api/users', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action,
+          userIds,
+          reason
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        loadUsers()
+        setSelectedUsers(new Set())
+
+        const successCount = data.results.filter((result: any) => result.success).length
+        toast({
+          title: '操作完成',
+          description: `已成功处理 ${successCount} 个用户`
+        })
+      } else {
+        throw new Error('User action failed')
+      }
+    } catch (error) {
+      toast({
+        title: '操作失败',
+        description: '无法执行用户操作，请稍后重试',
+        variant: 'destructive'
+      })
+    }
+  }
 
   const handleBulkAction = async (action: 'block' | 'unblock' | 'promote' | 'demote') => {
     if (selectedUsers.size === 0) {
@@ -123,39 +172,7 @@ export default function AdminUsers() {
       return
     }
 
-    try {
-      const response = await fetch('/api/users', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action,
-          userIds: Array.from(selectedUsers),
-          reason: action === 'unblock' ? blockReason : undefined
-        })
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        loadUsers()
-        setSelectedUsers(new Set())
-        
-        const successCount = data.results.filter((r: any) => r.success).length
-        toast({
-          title: '操作成功',
-          description: `已成功处理 ${successCount} 个用户`
-        })
-      } else {
-        throw new Error('Bulk action failed')
-      }
-    } catch (error) {
-      toast({
-        title: '操作失败',
-        description: '无法执行批量操作，请稍后重试',
-        variant: 'destructive'
-      })
-    }
+    await performUserAction(action, Array.from(selectedUsers))
   }
 
   const handleBlockUsers = async () => {
@@ -167,7 +184,7 @@ export default function AdminUsers() {
       return
     }
 
-    await handleBulkAction('block')
+    await performUserAction('block', Array.from(selectedUsers), blockReason)
     setShowBlockDialog(false)
     setBlockReason('')
   }
@@ -411,16 +428,14 @@ export default function AdminUsers() {
                         <DropdownMenuContent align="end">
                           {user.role === 'USER' ? (
                             <DropdownMenuItem onClick={() => {
-                              setSelectedUsers(new Set([user.id]))
-                              handleBulkAction('promote')
+                              performUserAction('promote', [user.id])
                             }}>
                               <Shield className="h-4 w-4 mr-2" />
                               设为管理员
                             </DropdownMenuItem>
                           ) : (
                             <DropdownMenuItem onClick={() => {
-                              setSelectedUsers(new Set([user.id]))
-                              handleBulkAction('demote')
+                              performUserAction('demote', [user.id])
                             }}>
                               <ShieldOff className="h-4 w-4 mr-2" />
                               取消管理员
@@ -431,8 +446,7 @@ export default function AdminUsers() {
                           
                           {user.isBlocked ? (
                             <DropdownMenuItem onClick={() => {
-                              setSelectedUsers(new Set([user.id]))
-                              handleBulkAction('unblock')
+                              performUserAction('unblock', [user.id])
                             }}>
                               <UserCheck className="h-4 w-4 mr-2" />
                               解封用户

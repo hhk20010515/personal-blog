@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, Suspense } from 'react'
-import { signIn, getSession } from 'next-auth/react'
+import { useEffect, useState, Suspense } from 'react'
+import { getProviders, signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -13,12 +13,18 @@ function SignInContent() {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
+  const [providers, setProviders] = useState<Record<string, any> | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
   
   const callbackUrl = searchParams?.get('callbackUrl') || '/'
   const error = searchParams?.get('error')
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Kai 的摄影博客'
+
+  useEffect(() => {
+    getProviders().then(setProviders)
+  }, [])
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -127,7 +133,7 @@ function SignInContent() {
             className="text-center mb-8"
           >
             <Link href="/" className="inline-block mb-6">
-              <span className="text-2xl font-bold gradient-text">Personal Blog</span>
+              <span className="text-2xl font-bold gradient-text">{siteName}</span>
             </Link>
             <h1 className="text-3xl font-bold mb-2">欢迎回来</h1>
             <p className="text-foreground/60">选择您的登录方式</p>
@@ -181,80 +187,94 @@ function SignInContent() {
                 transition={{ delay: 0.3 }}
                 className="space-y-3 mb-6"
               >
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full"
-                  onClick={() => handleOAuthSignIn('google')}
-                  disabled={isLoading}
-                >
-                  <Chrome className="h-5 w-5 mr-3" />
-                  使用 Google 登录
-                </Button>
+                {providers?.google && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => handleOAuthSignIn('google')}
+                    disabled={isLoading}
+                  >
+                    <Chrome className="h-5 w-5 mr-3" />
+                    使用 Google 登录
+                  </Button>
+                )}
 
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full"
-                  onClick={() => handleOAuthSignIn('wechat')}
-                  disabled={isLoading}
-                >
-                  <MessageCircle className="h-5 w-5 mr-3" />
-                  使用微信登录
-                </Button>
+                {providers?.wechat && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => handleOAuthSignIn('wechat')}
+                    disabled={isLoading}
+                  >
+                    <MessageCircle className="h-5 w-5 mr-3" />
+                    使用微信登录
+                  </Button>
+                )}
               </motion.div>
 
               {/* Divider */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="relative mb-6"
-              >
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-foreground/60">或</span>
-                </div>
-              </motion.div>
+              {providers?.email && (providers.google || providers.wechat) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="relative mb-6"
+                >
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-foreground/60">或</span>
+                  </div>
+                </motion.div>
+              )}
 
               {/* Email form */}
-              <motion.form
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                onSubmit={handleEmailSignIn}
-                className="space-y-4"
-              >
-                <div>
-                  <label htmlFor="email" className="sr-only">
-                    邮箱地址
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 border border-input rounded-lg bg-background/50 backdrop-blur text-foreground placeholder:text-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                    placeholder="输入您的邮箱地址"
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full"
-                  disabled={isLoading || !email.trim()}
+              {providers?.email && (
+                <motion.form
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  onSubmit={handleEmailSignIn}
+                  className="space-y-4"
                 >
-                  <Mail className="h-5 w-5 mr-2" />
-                  {isLoading ? '发送中...' : '发送登录链接'}
-                </Button>
-              </motion.form>
+                  <div>
+                    <label htmlFor="email" className="sr-only">
+                      邮箱地址
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-3 border border-input rounded-lg bg-background/50 backdrop-blur text-foreground placeholder:text-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                      placeholder="输入您的邮箱地址"
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full"
+                    disabled={isLoading || !email.trim()}
+                  >
+                    <Mail className="h-5 w-5 mr-2" />
+                    {isLoading ? '发送中...' : '发送登录链接'}
+                  </Button>
+                </motion.form>
+              )}
+
+              {providers && !providers.google && !providers.wechat && !providers.email && (
+                <p className="text-center text-sm text-muted-foreground">
+                  当前没有可用的登录方式，请检查服务端认证环境变量。
+                </p>
+              )}
             </>
           )}
 

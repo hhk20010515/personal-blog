@@ -1,24 +1,35 @@
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth.config'
+import { prisma } from '@/lib/prisma'
 
 export async function getCurrentUser() {
   const session = await getServerSession(authOptions)
   
-  if (!session?.user?.email) {
+  if (!session?.user?.id && !session?.user?.email) {
     return null
   }
 
-  // Return mock user data for now to fix build issues
-  return {
-    id: session.user.id || 'mock-user-id',
-    name: session.user.name || 'User',
-    email: session.user.email,
-    image: session.user.image || null,
-    bio: null,
-    role: session.user.role || 'USER',
-    isBlocked: false,
-    createdAt: new Date(),
-  }
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        ...(session.user.id ? [{ id: session.user.id }] : []),
+        ...(session.user.email ? [{ email: session.user.email }] : []),
+      ],
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      bio: true,
+      role: true,
+      isBlocked: true,
+      blockReason: true,
+      createdAt: true,
+    },
+  })
+
+  return user
 }
 
 export async function requireAuth() {

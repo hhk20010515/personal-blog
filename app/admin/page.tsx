@@ -1,19 +1,23 @@
-export default function AdminDashboard() {
+import { getDashboardStats } from '@/lib/db'
+
+export default async function AdminDashboard() {
+  const stats = await getDashboardStats()
+
   return (
     <div>
       <h2 className="text-xl font-bold mb-4">仪表盘</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-6 rounded shadow">
           <h3 className="font-semibold">总文章数</h3>
-          <p className="text-2xl font-bold text-blue-600">6</p>
+          <p className="text-2xl font-bold text-blue-600">{stats.totalPosts}</p>
         </div>
         <div className="bg-white p-6 rounded shadow">
           <h3 className="font-semibold">总用户数</h3>
-          <p className="text-2xl font-bold text-green-600">1</p>
+          <p className="text-2xl font-bold text-green-600">{stats.totalUsers}</p>
         </div>
         <div className="bg-white p-6 rounded shadow">
           <h3 className="font-semibold">总浏览量</h3>
-          <p className="text-2xl font-bold text-purple-600">125</p>
+          <p className="text-2xl font-bold text-purple-600">{stats.totalViews}</p>
         </div>
       </div>
       

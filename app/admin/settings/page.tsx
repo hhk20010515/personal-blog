@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AlertTriangle, Save, Shield, Mail, Globe, Database, Image, Bell } from 'lucide-react'
+import { AlertTriangle, Save, Shield, Mail, Globe, Database, Image as ImageIcon, Bell } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 interface SiteSettings {
@@ -39,8 +39,8 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>({
     siteName: '个人博客',
     siteDescription: '分享技术、摄影和生活感悟的个人博客平台',
-    siteUrl: 'https://yourdomain.com',
-    contactEmail: 'hhk20010515@gmail.com',
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@example.com',
     allowRegistration: true,
     requireEmailVerification: false,
     moderateComments: true,
@@ -54,6 +54,13 @@ export default function AdminSettingsPage() {
     socialShareImage: '/og-image.png'
   })
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    const storedSettings = window.localStorage.getItem('admin-site-settings')
+    if (storedSettings) {
+      setSettings(JSON.parse(storedSettings))
+    }
+  }, [])
 
   useEffect(() => {
     if (status === 'unauthenticated' || (session && session.user?.role !== 'ADMIN')) {
@@ -72,10 +79,7 @@ export default function AdminSettingsPage() {
   const handleSave = async () => {
     setIsLoading(true)
     try {
-      // In a real app, this would make an API call to save settings
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-      console.log('Settings saved:', settings)
-      // Show success message
+      window.localStorage.setItem('admin-site-settings', JSON.stringify(settings))
     } catch (error) {
       console.error('Failed to save settings:', error)
       // Show error message
@@ -305,7 +309,7 @@ export default function AdminSettingsPage() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Image className="h-5 w-5" />
+                        <ImageIcon className="h-5 w-5" />
                         文件上传设置
                       </CardTitle>
                       <CardDescription>

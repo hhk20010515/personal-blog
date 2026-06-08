@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { requireAuth, createApiResponse, createErrorResponse } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
@@ -7,31 +8,36 @@ export const dynamic = 'force-dynamic'
 // GET /api/users/me - 获取当前用户信息
 export async function GET(req: NextRequest) {
   try {
-    // Return mock user data for now to fix build
-    const mockUser = {
-      id: 'admin',
-      name: 'Administrator',
-      email: 'hhk20010515@gmail.com',
-      image: null,
-      bio: 'Blog Administrator',
-      website: null,
-      location: null,
-      twitterHandle: null,
-      githubHandle: null,
-      role: 'ADMIN',
-      isBlocked: false,
-      createdAt: new Date().toISOString(),
-      _count: {
-        posts: 6,
-        comments: 0,
-        followers: 0,
-        following: 0,
-        likes: 15,
-        bookmarks: 0
-      }
-    }
+    const authUser = await requireAuth()
+    const user = await prisma.user.findUnique({
+      where: { id: authUser.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        bio: true,
+        website: true,
+        location: true,
+        twitterHandle: true,
+        githubHandle: true,
+        role: true,
+        isBlocked: true,
+        createdAt: true,
+        _count: {
+          select: {
+            posts: true,
+            comments: true,
+            followers: true,
+            following: true,
+            likes: true,
+            bookmarks: true,
+          },
+        },
+      },
+    })
 
-    return createApiResponse(mockUser)
+    return createApiResponse(user)
 
   } catch (error: any) {
     console.error('GET /api/users/me error:', error)
@@ -42,32 +48,45 @@ export async function GET(req: NextRequest) {
 // PUT /api/users/me - 更新当前用户信息
 export async function PUT(req: NextRequest) {
   try {
+    const user = await requireAuth()
     const body = await req.json()
     const { name, bio, website, location, twitterHandle, githubHandle } = body
 
-    // Return mock updated user data for now to fix build
-    const updatedUser = {
-      id: 'admin',
-      name: name || 'Administrator',
-      email: 'hhk20010515@gmail.com',
-      image: null,
-      bio: bio || 'Blog Administrator',
-      website: website || null,
-      location: location || null,
-      twitterHandle: twitterHandle || null,
-      githubHandle: githubHandle || null,
-      role: 'ADMIN',
-      isBlocked: false,
-      createdAt: new Date().toISOString(),
-      _count: {
-        posts: 6,
-        comments: 0,
-        followers: 0,
-        following: 0,
-        likes: 15,
-        bookmarks: 0
-      }
-    }
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        name: name?.trim() || null,
+        bio: bio?.trim() || null,
+        website: website?.trim() || null,
+        location: location?.trim() || null,
+        twitterHandle: twitterHandle?.trim() || null,
+        githubHandle: githubHandle?.trim() || null,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        bio: true,
+        website: true,
+        location: true,
+        twitterHandle: true,
+        githubHandle: true,
+        role: true,
+        isBlocked: true,
+        createdAt: true,
+        _count: {
+          select: {
+            posts: true,
+            comments: true,
+            followers: true,
+            following: true,
+            likes: true,
+            bookmarks: true,
+          },
+        },
+      },
+    })
 
     return createApiResponse(updatedUser)
 

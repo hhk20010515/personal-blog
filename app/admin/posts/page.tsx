@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Plus,
@@ -78,7 +78,7 @@ export default function AdminPosts() {
 
   const { toast } = useToast()
 
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -107,11 +107,11 @@ export default function AdminPosts() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [categoryFilter, page, searchQuery, statusFilter, toast])
 
   useEffect(() => {
     loadPosts()
-  }, [page, searchQuery, statusFilter, categoryFilter])
+  }, [loadPosts])
 
   const handleDelete = async (postId: string, slug: string) => {
     if (!confirm('确定要删除这篇文章吗？此操作无法撤销。')) return

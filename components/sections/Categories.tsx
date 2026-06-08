@@ -1,10 +1,11 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Code, Camera, Heart, ArrowRight } from 'lucide-react'
 
-const categories = [
+const fallbackCategories = [
   {
     id: 'tech',
     name: '技术',
@@ -35,6 +36,35 @@ const categories = [
 ]
 
 export default function Categories() {
+  const [categories, setCategories] = useState(fallbackCategories)
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      const response = await fetch('/api/categories')
+
+      if (!response.ok) return
+
+      const data = await response.json()
+      setCategories(data.map((category: any) => {
+        const fallback = fallbackCategories.find((item) => item.id === category.slug)
+
+        return {
+          id: category.slug,
+          name: category.name,
+          description: category.description || fallback?.description || '',
+          icon: fallback?.icon || Code,
+          color: fallback?.color || 'from-slate-500 to-slate-700',
+          count: category._count?.posts || 0,
+          href: category.slug === 'tech' || category.slug === 'photography' || category.slug === 'life'
+            ? `/${category.slug}`
+            : `/posts?category=${category.slug}`,
+        }
+      }))
+    }
+
+    loadCategories()
+  }, [])
+
   return (
     <section className="py-20 bg-muted/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

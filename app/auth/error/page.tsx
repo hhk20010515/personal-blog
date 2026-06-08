@@ -33,6 +33,7 @@ const errorMessages = {
 function AuthErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams?.get('error') as keyof typeof errorMessages
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Kai 的摄影博客'
 
   const errorInfo = errorMessages[error] || errorMessages.Default
 
@@ -69,7 +70,7 @@ function AuthErrorContent() {
             className="mb-8"
           >
             <Link href="/" className="inline-block mb-6">
-              <span className="text-2xl font-bold gradient-text">Personal Blog</span>
+              <span className="text-2xl font-bold gradient-text">{siteName}</span>
             </Link>
           </motion.div>
 

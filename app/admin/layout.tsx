@@ -1,10 +1,17 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { requireAdmin } from '@/lib/auth'
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  try {
+    await requireAdmin()
+  } catch {
+    redirect('/auth/signin?callbackUrl=/admin')
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-7xl mx-auto">

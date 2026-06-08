@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useEffect, useMemo, useState, Suspense } from 'react'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
@@ -13,202 +13,118 @@ import { useSearchParams } from 'next/navigation'
 interface Post {
   id: string
   title: string
-  excerpt: string
+  slug: string
+  excerpt: string | null
   content: string
-  category: 'TECH' | 'PHOTOGRAPHY' | 'LIFE'
-  tags: string[]
-  author: {
+  tags: Array<{
+    tag: {
+      id: string
+      name: string
+      slug: string
+    }
+  }>
+  category: {
     id: string
     name: string
-    image?: string
+    slug: string
+    color?: string | null
+  } | null
+  author: {
+    id: string
+    name: string | null
+    image?: string | null
   }
   createdAt: string
-  updatedAt: string
-  published: boolean
-  views: number
-  likes: number
+  publishedAt: string | null
+  viewCount: number
+  likeCount: number
   _count: {
+    likes: number
     comments: number
   }
 }
 
-const categoryLabels = {
-  'TECH': '技术',
-  'PHOTOGRAPHY': '摄影',
-  'LIFE': '生活'
+const categoryColors: Record<string, string> = {
+  tech: 'from-blue-500 to-purple-600',
+  photography: 'from-amber-500 to-orange-600',
+  life: 'from-rose-500 to-pink-600',
 }
-
-const categoryColors = {
-  'TECH': 'from-blue-500 to-purple-600',
-  'PHOTOGRAPHY': 'from-amber-500 to-orange-600',
-  'LIFE': 'from-rose-500 to-pink-600'
-}
-
-const mockPosts: Post[] = [
-  {
-    id: '1',
-    title: 'GPT-5与Gemini 2.5：2025年AI大语言模型新突破',
-    excerpt: '深入探讨最新的大语言模型技术发展，了解GPT-5和Gemini 2.5如何改变AI应用的格局...',
-    content: '',
-    category: 'TECH',
-    tags: ['AI', 'GPT-5', 'Gemini', '机器学习'],
-    author: {
-      id: 'user1',
-      name: '技术探索者',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
-    },
-    createdAt: '2025-01-10T10:00:00Z',
-    updatedAt: '2025-01-10T10:00:00Z',
-    published: true,
-    views: 1250,
-    likes: 89,
-    _count: { comments: 23 }
-  },
-  {
-    id: '2',
-    title: '2025年摄影趋势：明亮色彩与真实情感的回归',
-    excerpt: '探索今年摄影界的最新趋势，从色彩运用到情感表达，看摄影艺术如何演进...',
-    content: '',
-    category: 'PHOTOGRAPHY',
-    tags: ['摄影趋势', '色彩', '情感摄影', '2025'],
-    author: {
-      id: 'user2',
-      name: '光影记录者',
-      image: 'https://images.unsplash.com/photo-1494790108755-2616c88ca90a?w=100&h=100&fit=crop&crop=face'
-    },
-    createdAt: '2025-01-09T15:30:00Z',
-    updatedAt: '2025-01-09T15:30:00Z',
-    published: true,
-    views: 890,
-    likes: 67,
-    _count: { comments: 15 }
-  },
-  {
-    id: '3',
-    title: '正念生活：在数字时代寻找内心的平静',
-    excerpt: '在这个数字化的时代，如何通过正念练习找到内心的平静与专注，建立健康的生活方式...',
-    content: '',
-    category: 'LIFE',
-    tags: ['正念', '数字排毒', '生活方式', '心理健康'],
-    author: {
-      id: 'user3',
-      name: '生活哲学家',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
-    },
-    createdAt: '2025-01-08T09:15:00Z',
-    updatedAt: '2025-01-08T09:15:00Z',
-    published: true,
-    views: 720,
-    likes: 45,
-    _count: { comments: 12 }
-  },
-  {
-    id: '4',
-    title: 'Next.js 14全栈开发最佳实践',
-    excerpt: '深入了解Next.js 14的新特性，App Router架构设计，以及现代Web开发的最佳实践...',
-    content: '',
-    category: 'TECH',
-    tags: ['Next.js', 'React', 'Web开发', '前端'],
-    author: {
-      id: 'user1',
-      name: '技术探索者',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
-    },
-    createdAt: '2025-01-07T14:20:00Z',
-    updatedAt: '2025-01-07T14:20:00Z',
-    published: true,
-    views: 1050,
-    likes: 78,
-    _count: { comments: 19 }
-  },
-  {
-    id: '5',
-    title: '街头摄影的艺术：捕捉城市生活的真实瞬间',
-    excerpt: '学习街头摄影的技巧与心得，如何在繁忙的城市中发现并记录那些感人的瞬间...',
-    content: '',
-    category: 'PHOTOGRAPHY',
-    tags: ['街头摄影', '城市', '纪实摄影', '摄影技巧'],
-    author: {
-      id: 'user2',
-      name: '光影记录者',
-      image: 'https://images.unsplash.com/photo-1494790108755-2616c88ca90a?w=100&h=100&fit=crop&crop=face'
-    },
-    createdAt: '2025-01-06T11:45:00Z',
-    updatedAt: '2025-01-06T11:45:00Z',
-    published: true,
-    views: 650,
-    likes: 52,
-    _count: { comments: 8 }
-  },
-  {
-    id: '6',
-    title: '简约主义生活：拥有更少，体验更多',
-    excerpt: '探索简约主义的生活哲学，了解如何通过减法生活获得更多的自由与幸福...',
-    content: '',
-    category: 'LIFE',
-    tags: ['简约主义', '生活哲学', '断舍离', '幸福'],
-    author: {
-      id: 'user3',
-      name: '生活哲学家',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
-    },
-    createdAt: '2025-01-05T16:10:00Z',
-    updatedAt: '2025-01-05T16:10:00Z',
-    published: true,
-    views: 580,
-    likes: 41,
-    _count: { comments: 14 }
-  }
-]
 
 function PostsContent() {
   const searchParams = useSearchParams()
-  const [posts, setPosts] = useState<Post[]>(mockPosts)
-  const [filteredPosts, setFilteredPosts] = useState<Post[]>(mockPosts)
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('')
+  const [selectedCategory, setSelectedCategory] = useState('')
   const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'views'>('latest')
 
-  // Get category from URL params
   useEffect(() => {
     const category = searchParams.get('category')
     if (category) {
-      setSelectedCategory(category.toUpperCase())
+      setSelectedCategory(category.toLowerCase())
     }
   }, [searchParams])
 
-  // Filter and sort posts
   useEffect(() => {
-    let filtered = posts
+    const loadPosts = async () => {
+      setLoading(true)
 
-    // Filter by category
-    if (selectedCategory) {
-      filtered = filtered.filter(post => post.category === selectedCategory)
+      try {
+        const response = await fetch('/api/posts?limit=50')
+        if (response.ok) {
+          const data = await response.json()
+          setPosts(data.posts)
+        }
+      } finally {
+        setLoading(false)
+      }
     }
 
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(post => 
-        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
-    }
+    loadPosts()
+  }, [])
 
-    // Sort posts
-    filtered = [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case 'popular':
-          return b.likes - a.likes
-        case 'views':
-          return b.views - a.views
-        case 'latest':
-        default:
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  const categories = useMemo(() => {
+    const bySlug = new Map<string, { slug: string; name: string }>()
+    posts.forEach((post) => {
+      if (post.category) {
+        bySlug.set(post.category.slug, {
+          slug: post.category.slug,
+          name: post.category.name,
+        })
       }
     })
+    return Array.from(bySlug.values())
+  }, [posts])
 
-    setFilteredPosts(filtered)
+  const filteredPosts = useMemo(() => {
+    let filtered = posts
+
+    if (selectedCategory) {
+      filtered = filtered.filter((post) => post.category?.slug === selectedCategory)
+    }
+
+    if (searchTerm) {
+      const normalizedSearch = searchTerm.toLowerCase()
+      filtered = filtered.filter((post) => {
+        return (
+          post.title.toLowerCase().includes(normalizedSearch) ||
+          (post.excerpt || '').toLowerCase().includes(normalizedSearch) ||
+          post.tags.some(({ tag }) => tag.name.toLowerCase().includes(normalizedSearch))
+        )
+      })
+    }
+
+    return [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'popular':
+          return (b._count?.likes || b.likeCount) - (a._count?.likes || a.likeCount)
+        case 'views':
+          return b.viewCount - a.viewCount
+        case 'latest':
+        default:
+          return new Date(b.publishedAt || b.createdAt).getTime() - new Date(a.publishedAt || a.createdAt).getTime()
+      }
+    })
   }, [posts, selectedCategory, searchTerm, sortBy])
 
   const formatDate = (dateString: string) => {
@@ -231,7 +147,6 @@ function PostsContent() {
     <>
       <Header />
       <main className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background">
-        {/* Header Section */}
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
@@ -248,7 +163,6 @@ function PostsContent() {
               </p>
             </motion.div>
 
-            {/* Search and Filter Bar */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -256,19 +170,17 @@ function PostsContent() {
               className="glass-effect rounded-xl p-6 mb-8"
             >
               <div className="flex flex-col md:flex-row gap-4 items-center">
-                {/* Search Input */}
-                <div className="relative flex-1">
+                <div className="relative flex-1 w-full">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="搜索文章标题、内容或标签..."
+                    placeholder="搜索文章标题、摘要或标签..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(event) => setSearchTerm(event.target.value)}
                     className="pl-10"
                   />
                 </div>
 
-                {/* Category Filter */}
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button
                     variant={selectedCategory === '' ? 'default' : 'outline'}
                     size="sm"
@@ -276,19 +188,18 @@ function PostsContent() {
                   >
                     全部
                   </Button>
-                  {Object.entries(categoryLabels).map(([key, label]) => (
+                  {categories.map((category) => (
                     <Button
-                      key={key}
-                      variant={selectedCategory === key ? 'default' : 'outline'}
+                      key={category.slug}
+                      variant={selectedCategory === category.slug ? 'default' : 'outline'}
                       size="sm"
-                      onClick={() => setSelectedCategory(key)}
+                      onClick={() => setSelectedCategory(category.slug)}
                     >
-                      {label}
+                      {category.name}
                     </Button>
                   ))}
                 </div>
 
-                {/* Sort Options */}
                 <div className="flex gap-2">
                   <Button
                     variant={sortBy === 'latest' ? 'default' : 'outline'}
@@ -317,10 +228,13 @@ function PostsContent() {
           </div>
         </section>
 
-        {/* Posts Grid */}
         <section className="pb-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {filteredPosts.length === 0 ? (
+            {loading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : filteredPosts.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -339,38 +253,37 @@ function PostsContent() {
                     key={post.id}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    transition={{ duration: 0.6, delay: index * 0.05 }}
                     className="group"
                   >
                     <article className="glass-effect rounded-xl overflow-hidden card-hover h-full flex flex-col">
-                      {/* Category Badge */}
                       <div className="p-6 pb-0">
-                        <span className={`inline-block px-3 py-1 text-xs font-medium text-white rounded-full bg-gradient-to-r ${categoryColors[post.category]}`}>
-                          {categoryLabels[post.category]}
-                        </span>
+                        {post.category && (
+                          <span className={`inline-block px-3 py-1 text-xs font-medium text-white rounded-full bg-gradient-to-r ${categoryColors[post.category.slug] || 'from-slate-500 to-slate-700'}`}>
+                            {post.category.name}
+                          </span>
+                        )}
                       </div>
 
-                      {/* Content */}
                       <div className="p-6 pt-4 flex-1 flex flex-col">
                         <h2 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2">
-                          <Link href={`/posts/${post.id}`}>
+                          <Link href={`/posts/${post.slug}`}>
                             {post.title}
                           </Link>
                         </h2>
-                        
+
                         <p className="text-muted-foreground text-sm mb-4 flex-1 line-clamp-3">
-                          {post.excerpt}
+                          {post.excerpt || '暂无摘要'}
                         </p>
 
-                        {/* Tags */}
                         <div className="flex flex-wrap gap-1 mb-4">
-                          {post.tags.slice(0, 3).map((tag, tagIndex) => (
+                          {post.tags.slice(0, 3).map(({ tag }) => (
                             <span
-                              key={tagIndex}
+                              key={tag.id}
                               className="inline-flex items-center gap-1 px-2 py-1 bg-muted/50 text-xs rounded-md"
                             >
                               <Tag className="h-3 w-3" />
-                              {tag}
+                              {tag.name}
                             </span>
                           ))}
                           {post.tags.length > 3 && (
@@ -380,13 +293,12 @@ function PostsContent() {
                           )}
                         </div>
 
-                        {/* Author and Stats */}
                         <div className="flex items-center justify-between text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             {post.author.image ? (
                               <img
                                 src={post.author.image}
-                                alt={post.author.name}
+                                alt={post.author.name || 'Author'}
                                 className="w-6 h-6 rounded-full"
                               />
                             ) : (
@@ -394,28 +306,27 @@ function PostsContent() {
                                 <User className="h-3 w-3" />
                               </div>
                             )}
-                            <span>{post.author.name}</span>
+                            <span>{post.author.name || '作者'}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            <span>{formatDate(post.createdAt)}</span>
+                            <span>{formatDate(post.publishedAt || post.createdAt)}</span>
                           </div>
                         </div>
 
-                        {/* Engagement Stats */}
                         <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/50">
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Eye className="h-4 w-4" />
-                              {formatNumber(post.views)}
+                              {formatNumber(post.viewCount)}
                             </span>
                             <span className="flex items-center gap-1">
                               <Heart className="h-4 w-4" />
-                              {formatNumber(post.likes)}
+                              {formatNumber(post._count?.likes || post.likeCount)}
                             </span>
                             <span className="flex items-center gap-1">
                               <MessageCircle className="h-4 w-4" />
-                              {post._count.comments}
+                              {post._count?.comments || 0}
                             </span>
                           </div>
                         </div>
@@ -424,20 +335,6 @@ function PostsContent() {
                   </motion.div>
                 ))}
               </div>
-            )}
-
-            {/* Load More Button */}
-            {filteredPosts.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="text-center mt-12"
-              >
-                <Button variant="outline" size="lg">
-                  加载更多文章
-                </Button>
-              </motion.div>
             )}
           </div>
         </section>

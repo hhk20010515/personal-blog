@@ -10,7 +10,7 @@ import {
   Send, 
   ArrowLeft,
   Settings,
-  Image,
+  Image as ImageIcon,
   Tag,
   Calendar,
   Globe,
@@ -61,18 +61,31 @@ export default function WritePage() {
   const [isFeatured, setIsFeatured] = useState(false)
   const [metaTitle, setMetaTitle] = useState('')
   const [metaDescription, setMetaDescription] = useState('')
+  const [camera, setCamera] = useState('')
+  const [lens, setLens] = useState('')
+  const [focalLength, setFocalLength] = useState('')
+  const [aperture, setAperture] = useState('')
+  const [shutterSpeed, setShutterSpeed] = useState('')
+  const [iso, setIso] = useState('')
+  const [takenAt, setTakenAt] = useState('')
+  const [locationName, setLocationName] = useState('')
+  const [locationLat, setLocationLat] = useState('')
+  const [locationLng, setLocationLng] = useState('')
+  const [photoSeries, setPhotoSeries] = useState('')
 
   const [categories, setCategories] = useState<Category[]>([])
   const [saving, setSaving] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showMediaLibrary, setShowMediaLibrary] = useState(false)
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated or not an admin
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/signin?callbackUrl=/write')
+    } else if (status === 'authenticated' && session?.user.role !== 'ADMIN') {
+      router.push('/')
     }
-  }, [status, router])
+  }, [status, session, router])
 
   // Load categories
   useEffect(() => {
@@ -173,7 +186,18 @@ export default function WritePage() {
         visibility,
         isFeatured,
         metaTitle: metaTitle.trim() || undefined,
-        metaDescription: metaDescription.trim() || undefined
+        metaDescription: metaDescription.trim() || undefined,
+        camera: camera.trim() || undefined,
+        lens: lens.trim() || undefined,
+        focalLength: focalLength.trim() || undefined,
+        aperture: aperture.trim() || undefined,
+        shutterSpeed: shutterSpeed.trim() || undefined,
+        iso: iso ? Number(iso) : undefined,
+        takenAt: takenAt || undefined,
+        locationName: locationName.trim() || undefined,
+        locationLat: locationLat ? Number(locationLat) : undefined,
+        locationLng: locationLng ? Number(locationLng) : undefined,
+        photoSeries: photoSeries.trim() || undefined
       }
 
       const response = await fetch('/api/posts', {
@@ -217,7 +241,7 @@ export default function WritePage() {
     )
   }
 
-  if (!session) {
+  if (!session || session.user.role !== 'ADMIN') {
     return null
   }
 
@@ -246,7 +270,7 @@ export default function WritePage() {
                 size="sm"
                 onClick={() => setShowMediaLibrary(true)}
               >
-                <Image className="h-4 w-4 mr-2" />
+                <ImageIcon className="h-4 w-4 mr-2" />
                 媒体库
               </Button>
 
@@ -257,7 +281,7 @@ export default function WritePage() {
                     设置
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>文章设置</DialogTitle>
                   </DialogHeader>
@@ -364,9 +388,143 @@ export default function WritePage() {
                           添加
                         </Button>
                       </div>
-                    </div>
+	                    </div>
 
-                    {/* SEO Settings */}
+	                    {/* Photography Metadata */}
+	                    <div className="space-y-4">
+	                      <h3 className="font-medium">摄影信息</h3>
+
+	                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+	                        <div>
+	                          <label className="text-sm font-medium mb-2 block">相机</label>
+	                          <input
+	                            type="text"
+	                            value={camera}
+	                            onChange={(e) => setCamera(e.target.value)}
+	                            placeholder="例如 Fujifilm X-T5"
+	                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+	                          />
+	                        </div>
+
+	                        <div>
+	                          <label className="text-sm font-medium mb-2 block">镜头</label>
+	                          <input
+	                            type="text"
+	                            value={lens}
+	                            onChange={(e) => setLens(e.target.value)}
+	                            placeholder="例如 XF 35mm F1.4"
+	                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+	                          />
+	                        </div>
+
+	                        <div>
+	                          <label className="text-sm font-medium mb-2 block">焦段</label>
+	                          <input
+	                            type="text"
+	                            value={focalLength}
+	                            onChange={(e) => setFocalLength(e.target.value)}
+	                            placeholder="例如 35mm"
+	                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+	                          />
+	                        </div>
+
+	                        <div>
+	                          <label className="text-sm font-medium mb-2 block">光圈</label>
+	                          <input
+	                            type="text"
+	                            value={aperture}
+	                            onChange={(e) => setAperture(e.target.value)}
+	                            placeholder="例如 f/2.8"
+	                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+	                          />
+	                        </div>
+
+	                        <div>
+	                          <label className="text-sm font-medium mb-2 block">快门</label>
+	                          <input
+	                            type="text"
+	                            value={shutterSpeed}
+	                            onChange={(e) => setShutterSpeed(e.target.value)}
+	                            placeholder="例如 1/250s"
+	                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+	                          />
+	                        </div>
+
+	                        <div>
+	                          <label className="text-sm font-medium mb-2 block">ISO</label>
+	                          <input
+	                            type="number"
+	                            min="1"
+	                            value={iso}
+	                            onChange={(e) => setIso(e.target.value)}
+	                            placeholder="例如 400"
+	                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+	                          />
+	                        </div>
+
+	                        <div>
+	                          <label className="text-sm font-medium mb-2 block">拍摄时间</label>
+	                          <input
+	                            type="datetime-local"
+	                            value={takenAt}
+	                            onChange={(e) => setTakenAt(e.target.value)}
+	                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+	                          />
+	                        </div>
+
+	                        <div>
+	                          <label className="text-sm font-medium mb-2 block">地点</label>
+	                          <input
+	                            type="text"
+	                            value={locationName}
+	                            onChange={(e) => setLocationName(e.target.value)}
+	                            placeholder="例如 上海"
+	                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+	                          />
+	                        </div>
+
+	                        <div>
+	                          <label className="text-sm font-medium mb-2 block">纬度</label>
+	                          <input
+	                            type="number"
+	                            min="-90"
+	                            max="90"
+	                            step="0.000001"
+	                            value={locationLat}
+	                            onChange={(e) => setLocationLat(e.target.value)}
+	                            placeholder="31.230416"
+	                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+	                          />
+	                        </div>
+
+	                        <div>
+	                          <label className="text-sm font-medium mb-2 block">经度</label>
+	                          <input
+	                            type="number"
+	                            min="-180"
+	                            max="180"
+	                            step="0.000001"
+	                            value={locationLng}
+	                            onChange={(e) => setLocationLng(e.target.value)}
+	                            placeholder="121.473701"
+	                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+	                          />
+	                        </div>
+	                      </div>
+
+	                      <div>
+	                        <label className="text-sm font-medium mb-2 block">作品系列</label>
+	                        <input
+	                          type="text"
+	                          value={photoSeries}
+	                          onChange={(e) => setPhotoSeries(e.target.value)}
+	                          placeholder="例如 城市夜行"
+	                          className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+	                        />
+	                      </div>
+	                    </div>
+
+	                    {/* SEO Settings */}
                     <div className="space-y-4">
                       <h3 className="font-medium">SEO 设置</h3>
                       

@@ -4,8 +4,11 @@ import './globals.css'
 import { cn } from '@/lib/utils'
 import { Providers } from './providers'
 
-// Force dynamic rendering to fix build issues
 export const dynamic = 'force-dynamic'
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Kai 的摄影博客'
+const siteDescription = '记录摄影作品、技术实践和生活观察的个人博客。'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -13,35 +16,36 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
-    default: 'Personal Blog - 分享技术与生活的见解',
-    template: '%s | Personal Blog'
+    default: `${siteName} - 摄影、技术与生活记录`,
+    template: `%s | ${siteName}`
   },
-  description: '一个专注于分享计算机技术、摄影艺术和生活见解的个人博客平台',
-  keywords: ['博客', '技术', '摄影', '个人见解', 'Next.js', 'React'],
-  authors: [{ name: 'Blog Author' }],
-  creator: 'Blog Author',
+  description: siteDescription,
+  keywords: ['个人博客', '摄影', '摄影作品', '技术', '生活记录', 'Next.js'],
+  authors: [{ name: 'Kai' }],
+  creator: 'Kai',
   openGraph: {
     type: 'website',
     locale: 'zh_CN',
-    url: 'https://yourdomain.com',
-    siteName: 'Personal Blog',
-    title: 'Personal Blog - 分享技术与生活的见解',
-    description: '一个专注于分享计算机技术、摄影艺术和生活见解的个人博客平台',
+    url: siteUrl,
+    siteName,
+    title: `${siteName} - 摄影、技术与生活记录`,
+    description: siteDescription,
     images: [
       {
-        url: '/images/og-image.jpg',
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Personal Blog',
+        alt: siteName,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Personal Blog - 分享技术与生活的见解',
-    description: '一个专注于分享计算机技术、摄影艺术和生活见解的个人博客平台',
-    images: ['/images/og-image.jpg'],
+    title: `${siteName} - 摄影、技术与生活记录`,
+    description: siteDescription,
+    images: ['/opengraph-image'],
   },
   robots: {
     index: true,
@@ -53,9 +57,6 @@ export const metadata: Metadata = {
       'max-image-preview': 'large',
       'max-snippet': -1,
     },
-  },
-  verification: {
-    google: 'google-site-verification-code',
   },
 }
 

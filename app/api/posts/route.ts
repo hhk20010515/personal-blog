@@ -1,61 +1,146 @@
 import { NextRequest } from 'next/server'
-import { requireAuth, createApiResponse, createErrorResponse } from '@/lib/auth'
+import { createApiResponse, createErrorResponse, getCurrentUser, requireAdmin } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { buildPhotographyCreateData } from '@/lib/post-metadata'
+import { slugify } from '@/lib/utils'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
+
+async function createUniqueSlug(title: string) {
+  const baseSlug = slugify(title) || `post-${Date.now()}`
+  let slug = baseSlug
+  let suffix = 1
+
+  while (await prisma.post.findUnique({ where: { slug }, select: { id: true } })) {
+    slug = `${baseSlug}-${suffix}`
+    suffix += 1
+  }
+
+  return slug
+}
 
 // GET /api/posts - 获取文章列表
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
+    const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1)
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '10', 10), 1), 50)
+    const skip = (page - 1) * limit
+
     const category = searchParams.get('category')
-    const featured = searchParams.get('featured') === 'true'
+    const categoryId = searchParams.get('categoryId')
+    const tag = searchParams.get('tag')
+    const search = searchParams.get('search')
+    const status = searchParams.get('status')
+    const exclude = searchParams.get('exclude')
+    const includeUnpublished = searchParams.get('includeUnpublished') === 'true'
+    const featuredParam = searchParams.get('featured')
+    const currentUser = await getCurrentUser()
+    const canSeeUnpublished = currentUser?.role === 'ADMIN'
 
-    // Return mock posts for now to fix build
-    const mockPosts = [
-      {
-        id: '1',
-        title: 'GPT-5与Gemini 2.5：2025年AI大语言模型新突破',
-        slug: 'gpt-5-gemini-2025-ai-breakthroughs',
-        excerpt: '探索2025年最新的AI技术发展趋势',
-        content: '详细内容...',
-        status: 'PUBLISHED',
-        visibility: 'PUBLIC',
-        isFeatured: true,
-        isPinned: false,
-        publishedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        author: {
-          id: 'admin',
-          name: 'Administrator',
-          image: null,
-          bio: 'Blog Administrator'
+    const where: any = {}
+
+    if (!includeUnpublished || !canSeeUnpublished) {
+      where.status = 'PUBLISHED'
+      where.visibility = 'PUBLIC'
+    } else if (status && status !== 'all') {
+      where.status = status
+    }
+
+    if (category) {
+      where.category = { slug: category.toLowerCase() }
+    }
+
+    if (categoryId) {
+      where.categoryId = categoryId
+    }
+
+    if (tag) {
+      where.tags = {
+        some: {
+          tag: {
+            slug: tag.toLowerCase(),
+          },
         },
-        category: {
-          id: 'tech',
-          name: '技术',
-          slug: 'tech'
-        },
-        tags: [],
-        _count: {
-          likes: 5,
-          comments: 0
-        }
       }
-    ]
+    }
 
-    const filteredPosts = category ? mockPosts.filter(p => p.category.slug === category) : mockPosts
-    const featuredPosts = featured ? filteredPosts.filter(p => p.isFeatured) : filteredPosts
+    if (featuredParam === 'true') {
+      where.isFeatured = true
+    }
+
+    if (exclude) {
+      where.id = { not: exclude }
+    }
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { excerpt: { contains: search, mode: 'insensitive' } },
+        { content: { contains: search, mode: 'insensitive' } },
+        {
+          tags: {
+            some: {
+              tag: {
+                name: { contains: search, mode: 'insensitive' },
+              },
+            },
+          },
+        },
+      ]
+    }
+
+    const [posts, total] = await Promise.all([
+      prisma.post.findMany({
+        where,
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              bio: true,
+            },
+          },
+          category: true,
+          tags: {
+            include: { tag: true },
+          },
+          media: {
+            orderBy: { order: 'asc' },
+            include: { media: true },
+          },
+          _count: {
+            select: {
+              likes: true,
+              comments: {
+                where: {
+                  isApproved: true,
+                  isDeleted: false,
+                },
+              },
+            },
+          },
+        },
+        orderBy: [
+          { isPinned: 'desc' },
+          { publishedAt: 'desc' },
+          { createdAt: 'desc' },
+        ],
+        skip,
+        take: limit,
+      }),
+      prisma.post.count({ where }),
+    ])
 
     return createApiResponse({
-      posts: featuredPosts,
+      posts,
       pagination: {
         page,
         limit,
-        total: featuredPosts.length,
-        pages: Math.ceil(featuredPosts.length / limit)
+        total,
+        pages: Math.ceil(total / limit)
       }
     })
 
@@ -68,42 +153,78 @@ export async function GET(req: NextRequest) {
 // POST /api/posts - 创建新文章
 export async function POST(req: NextRequest) {
   try {
+    const user = await requireAdmin()
     const body = await req.json()
-    const { title, content, excerpt, categoryId, status = 'DRAFT' } = body
+    const {
+      title,
+      content,
+      excerpt,
+      categoryId,
+      status = 'DRAFT',
+      visibility = 'PUBLIC',
+      tags = [],
+      isFeatured = false,
+      metaTitle,
+      metaDescription,
+    } = body
 
     if (!title || !content) {
       return createErrorResponse('Title and content are required')
     }
 
-    // Return mock response for now to fix build
-    return createApiResponse({
-      id: 'mock-post-id',
-      title,
-      slug: 'mock-slug',
-      content,
-      excerpt,
-      status,
-      visibility: 'PUBLIC',
-      isFeatured: false,
-      isPinned: false,
-      publishedAt: status === 'PUBLISHED' ? new Date().toISOString() : null,
-      createdAt: new Date().toISOString(),
-      author: {
-        id: 'mock-user-id',
-        name: 'Test User',
-        image: null
+    const slug = await createUniqueSlug(title)
+    const tagNames = Array.isArray(tags)
+      ? tags.map((tag: string) => String(tag).trim()).filter(Boolean)
+      : []
+
+    const post = await prisma.post.create({
+      data: {
+        title: title.trim(),
+        slug,
+        content,
+        excerpt: excerpt?.trim() || null,
+        status,
+        visibility,
+        isFeatured: Boolean(isFeatured),
+        metaTitle: metaTitle?.trim() || null,
+        metaDescription: metaDescription?.trim() || null,
+        ...buildPhotographyCreateData(body),
+        publishedAt: status === 'PUBLISHED' ? new Date() : null,
+        authorId: user.id,
+        categoryId: categoryId || null,
+        tags: {
+          create: tagNames.map((name: string) => {
+            const tagSlug = slugify(name) || name.toLowerCase()
+
+            return {
+              tag: {
+                connectOrCreate: {
+                  where: { slug: tagSlug },
+                  create: {
+                    name,
+                    slug: tagSlug,
+                  },
+                },
+              },
+            }
+          }),
+        },
       },
-      category: {
-        id: categoryId || 'tech',
-        name: '技术',
-        slug: 'tech'
+      include: {
+        author: {
+          select: { id: true, name: true, image: true },
+        },
+        category: true,
+        tags: {
+          include: { tag: true },
+        },
+        _count: {
+          select: { likes: true, comments: true },
+        },
       },
-      tags: [],
-      _count: {
-        likes: 0,
-        comments: 0
-      }
-    }, 201)
+    })
+
+    return createApiResponse(post, 201)
 
   } catch (error: any) {
     console.error('POST /api/posts error:', error)
