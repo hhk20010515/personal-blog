@@ -20,7 +20,7 @@ function SignInContent() {
   
   const callbackUrl = searchParams?.get('callbackUrl') || '/'
   const error = searchParams?.get('error')
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Kai 的摄影博客'
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Luce'
 
   useEffect(() => {
     getProviders().then(setProviders)

@@ -33,7 +33,7 @@ const errorMessages = {
 function AuthErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams?.get('error') as keyof typeof errorMessages
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Kai 的摄影博客'
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Luce'
 
   const errorInfo = errorMessages[error] || errorMessages.Default
 

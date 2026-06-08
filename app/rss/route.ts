@@ -13,7 +13,7 @@ function escapeXml(value: string) {
 
 export async function GET() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Kai 的摄影博客'
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Luce'
   const posts = await prisma.post.findMany({
     where: {
       status: 'PUBLISHED',

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Heart, MessageCircle, Bookmark, Share2, ArrowUp } from 'lucide-react'
+import { Heart, Bookmark, Share2, ArrowUp, Cpu, Gauge, ShieldCheck, Weight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/hooks/use-toast'
@@ -16,6 +16,20 @@ interface PostContentProps {
     content: string
     slug: string
     likeCount: number
+    gearBrand?: string | null
+    gearModel?: string | null
+    gearType?: string | null
+    sensorFormat?: string | null
+    megapixels?: number | null
+    weightGrams?: number | null
+    priceCny?: number | null
+    reviewRating?: number | null
+    dynamicRange?: string | null
+    autofocusSystem?: string | null
+    stabilization?: string | null
+    weatherSealed?: boolean | null
+    sampleVariation?: string | null
+    firmwareVersion?: string | null
     media: Array<{
       media: {
         url: string
@@ -181,6 +195,22 @@ export default function PostContent({ post }: PostContentProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const gearParams = [
+    { label: '品牌型号', value: [post.gearBrand, post.gearModel].filter(Boolean).join(' '), icon: Cpu },
+    { label: '器材类型', value: post.gearType, icon: Cpu },
+    { label: '传感器 / 规格', value: post.sensorFormat, icon: Gauge },
+    { label: '有效像素', value: post.megapixels ? `${post.megapixels} MP` : null, icon: Gauge },
+    { label: '重量', value: post.weightGrams ? `${post.weightGrams} g` : null, icon: Weight },
+    { label: '参考价格', value: post.priceCny ? `¥${post.priceCny.toLocaleString('zh-CN')}` : null, icon: Weight },
+    { label: '综合评分', value: post.reviewRating ? `${post.reviewRating.toFixed(1)} / 10` : null, icon: Gauge },
+    { label: '动态范围', value: post.dynamicRange, icon: Gauge },
+    { label: '对焦系统', value: post.autofocusSystem, icon: Cpu },
+    { label: '防抖', value: post.stabilization, icon: ShieldCheck },
+    { label: '防尘防滴', value: post.weatherSealed === null || post.weatherSealed === undefined ? null : post.weatherSealed ? '支持' : '不支持 / 未标注', icon: ShieldCheck },
+    { label: '测试样本', value: post.sampleVariation, icon: Cpu },
+    { label: '固件版本', value: post.firmwareVersion, icon: Cpu },
+  ].filter((item) => item.value)
+
   return (
     <div className="relative">
       {/* Floating Action Bar */}
@@ -249,6 +279,35 @@ export default function PostContent({ post }: PostContentProps) {
                 />
               </motion.div>
             ))}
+          </div>
+        )}
+
+        {gearParams.length > 0 && (
+          <div className="not-prose mb-10 border border-cyan-300/18 bg-[#05070c] p-5 text-white shadow-[0_24px_70px_rgba(0,229,255,0.08)]">
+            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/55">Gear review matrix</p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-normal">器材测评参数</h2>
+              </div>
+              {post.reviewRating && (
+                <div className="border border-cyan-300/25 bg-cyan-300/[0.08] px-4 py-2 text-right">
+                  <p className="text-xs text-cyan-100/55">Rating</p>
+                  <p className="text-2xl font-semibold text-cyan-100">{post.reviewRating.toFixed(1)}</p>
+                </div>
+              )}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {gearParams.map((item) => {
+                const Icon = item.icon
+                return (
+                  <div key={item.label} className="border border-white/10 bg-white/[0.035] p-4">
+                    <Icon className="mb-3 h-4 w-4 text-cyan-200" />
+                    <p className="text-xs text-white/40">{item.label}</p>
+                    <p className="mt-1 text-sm font-medium text-white/80">{item.value}</p>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
 

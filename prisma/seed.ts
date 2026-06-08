@@ -24,12 +24,20 @@ async function main() {
       sortOrder: 2,
     },
     {
+      name: '器材测评',
+      slug: 'gear',
+      description: '相机、镜头、灯光、稳定器和影像工作流工具的硬核测评',
+      icon: 'Cpu',
+      color: '#22D3EE',
+      sortOrder: 3,
+    },
+    {
       name: '生活',
       slug: 'life',
       description: '生活感悟和个人思考',
       icon: 'Heart',
       color: '#EF4444',
-      sortOrder: 3,
+      sortOrder: 4,
     },
   ]
 

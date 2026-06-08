@@ -6,7 +6,7 @@ import { Mail, ArrowLeft, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default function VerifyRequest() {
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Kai 的摄影博客'
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Luce'
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20 px-4">

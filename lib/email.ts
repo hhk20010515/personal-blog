@@ -57,7 +57,7 @@ export async function sendVerificationRequest({
 function html({ url, host, email }: { url: string; host: string; email: string }) {
   const escapedEmail = `${email.replace(/\./g, '&#8203;.')}`
   const escapedHost = `${host.replace(/\./g, '&#8203;.')}`
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Kai 的摄影博客'
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Luce'
   
   return `
 <!DOCTYPE html>
@@ -170,7 +170,7 @@ export async function sendNewsletterEmail({
     throw new Error('Email service is not configured')
   }
 
-  const siteName = escapeHtml(process.env.NEXT_PUBLIC_SITE_NAME || 'Kai 的摄影博客')
+  const siteName = escapeHtml(process.env.NEXT_PUBLIC_SITE_NAME || 'Luce')
   const safeSubject = escapeHtml(subject)
   const safeContent = escapeHtml(content)
 

@@ -172,6 +172,22 @@ model Post {
   locationLat  Float?
   locationLng  Float?
   photoSeries  String?
+
+  // Gear review metadata
+  gearBrand        String?
+  gearModel        String?
+  gearType         String?
+  sensorFormat     String?
+  megapixels       Float?
+  weightGrams      Int?
+  priceCny         Int?
+  reviewRating     Float?
+  dynamicRange     String?
+  autofocusSystem  String?
+  stabilization    String?
+  weatherSealed    Boolean?
+  sampleVariation  String?
+  firmwareVersion  String?
   
   // Statistics
   viewCount    Int @default(0)

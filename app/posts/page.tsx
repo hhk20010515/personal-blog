@@ -47,6 +47,7 @@ interface Post {
 const categoryColors: Record<string, string> = {
   tech: 'from-blue-500 to-purple-600',
   photography: 'from-amber-500 to-orange-600',
+  gear: 'from-cyan-400 to-fuchsia-600',
   life: 'from-rose-500 to-pink-600',
 }
 
@@ -146,7 +147,7 @@ function PostsContent() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background">
+      <main className="min-h-screen bg-[#05070c] text-white">
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
@@ -158,8 +159,8 @@ function PostsContent() {
               <h1 className="text-4xl md:text-5xl font-bold mb-6">
                 所有文章
               </h1>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                探索技术、摄影和生活的精彩内容，发现更多有趣的观点和见解
+              <p className="text-xl text-white/60 max-w-2xl mx-auto">
+                探索摄影作品、器材测评和前沿技术观察，发现更多有价值的观点和参数记录
               </p>
             </motion.div>
 
@@ -167,7 +168,7 @@ function PostsContent() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="glass-effect rounded-xl p-6 mb-8"
+              className="mb-8 border border-cyan-300/12 bg-white/[0.045] p-6 backdrop-blur-xl"
             >
               <div className="flex flex-col md:flex-row gap-4 items-center">
                 <div className="relative flex-1 w-full">
@@ -176,7 +177,7 @@ function PostsContent() {
                     placeholder="搜索文章标题、摘要或标签..."
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-white/[0.06] border-white/10 text-white placeholder:text-white/40"
                   />
                 </div>
 
@@ -256,7 +257,7 @@ function PostsContent() {
                     transition={{ duration: 0.6, delay: index * 0.05 }}
                     className="group"
                   >
-                    <article className="glass-effect rounded-xl overflow-hidden card-hover h-full flex flex-col">
+                    <article className="h-full overflow-hidden border border-white/10 bg-white/[0.035] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/30 hover:bg-cyan-300/[0.055] flex flex-col">
                       <div className="p-6 pb-0">
                         {post.category && (
                           <span className={`inline-block px-3 py-1 text-xs font-medium text-white rounded-full bg-gradient-to-r ${categoryColors[post.category.slug] || 'from-slate-500 to-slate-700'}`}>

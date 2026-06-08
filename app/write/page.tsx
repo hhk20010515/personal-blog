@@ -72,6 +72,20 @@ export default function WritePage() {
   const [locationLat, setLocationLat] = useState('')
   const [locationLng, setLocationLng] = useState('')
   const [photoSeries, setPhotoSeries] = useState('')
+  const [gearBrand, setGearBrand] = useState('')
+  const [gearModel, setGearModel] = useState('')
+  const [gearType, setGearType] = useState('')
+  const [sensorFormat, setSensorFormat] = useState('')
+  const [megapixels, setMegapixels] = useState('')
+  const [weightGrams, setWeightGrams] = useState('')
+  const [priceCny, setPriceCny] = useState('')
+  const [reviewRating, setReviewRating] = useState('')
+  const [dynamicRange, setDynamicRange] = useState('')
+  const [autofocusSystem, setAutofocusSystem] = useState('')
+  const [stabilization, setStabilization] = useState('')
+  const [weatherSealed, setWeatherSealed] = useState<'unset' | 'true' | 'false'>('unset')
+  const [sampleVariation, setSampleVariation] = useState('')
+  const [firmwareVersion, setFirmwareVersion] = useState('')
 
   const [categories, setCategories] = useState<Category[]>([])
   const [saving, setSaving] = useState(false)
@@ -197,7 +211,21 @@ export default function WritePage() {
         locationName: locationName.trim() || undefined,
         locationLat: locationLat ? Number(locationLat) : undefined,
         locationLng: locationLng ? Number(locationLng) : undefined,
-        photoSeries: photoSeries.trim() || undefined
+        photoSeries: photoSeries.trim() || undefined,
+        gearBrand: gearBrand.trim() || undefined,
+        gearModel: gearModel.trim() || undefined,
+        gearType: gearType.trim() || undefined,
+        sensorFormat: sensorFormat.trim() || undefined,
+        megapixels: megapixels ? Number(megapixels) : undefined,
+        weightGrams: weightGrams ? Number(weightGrams) : undefined,
+        priceCny: priceCny ? Number(priceCny) : undefined,
+        reviewRating: reviewRating ? Number(reviewRating) : undefined,
+        dynamicRange: dynamicRange.trim() || undefined,
+        autofocusSystem: autofocusSystem.trim() || undefined,
+        stabilization: stabilization.trim() || undefined,
+        weatherSealed: weatherSealed === 'unset' ? undefined : weatherSealed === 'true',
+        sampleVariation: sampleVariation.trim() || undefined,
+        firmwareVersion: firmwareVersion.trim() || undefined
       }
 
       const response = await fetch('/api/posts', {
@@ -523,6 +551,182 @@ export default function WritePage() {
 	                        />
 	                      </div>
 	                    </div>
+
+                    {/* Gear Review Metadata */}
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-medium">器材测评参数</h3>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          适合相机、镜头、稳定器、存储、灯光等硬核测评内容；留空不会影响普通文章。
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">品牌</label>
+                          <input
+                            type="text"
+                            value={gearBrand}
+                            onChange={(e) => setGearBrand(e.target.value)}
+                            placeholder="例如 Sony / Fujifilm / DJI"
+                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">型号</label>
+                          <input
+                            type="text"
+                            value={gearModel}
+                            onChange={(e) => setGearModel(e.target.value)}
+                            placeholder="例如 A7C II / X100VI"
+                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">器材类型</label>
+                          <input
+                            type="text"
+                            value={gearType}
+                            onChange={(e) => setGearType(e.target.value)}
+                            placeholder="相机 / 镜头 / 稳定器 / 灯光"
+                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">传感器 / 规格</label>
+                          <input
+                            type="text"
+                            value={sensorFormat}
+                            onChange={(e) => setSensorFormat(e.target.value)}
+                            placeholder="全画幅 / APS-C / M4/3 / 1-inch"
+                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">有效像素 MP</label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.1"
+                            value={megapixels}
+                            onChange={(e) => setMegapixels(e.target.value)}
+                            placeholder="例如 33"
+                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">重量 g</label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={weightGrams}
+                            onChange={(e) => setWeightGrams(e.target.value)}
+                            placeholder="例如 514"
+                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">参考价格 CNY</label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={priceCny}
+                            onChange={(e) => setPriceCny(e.target.value)}
+                            placeholder="例如 12999"
+                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">评分 0-10</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.1"
+                            value={reviewRating}
+                            onChange={(e) => setReviewRating(e.target.value)}
+                            placeholder="例如 8.7"
+                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">动态范围</label>
+                          <input
+                            type="text"
+                            value={dynamicRange}
+                            onChange={(e) => setDynamicRange(e.target.value)}
+                            placeholder="例如 14 stops / 高光宽容度优秀"
+                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">对焦系统</label>
+                          <input
+                            type="text"
+                            value={autofocusSystem}
+                            onChange={(e) => setAutofocusSystem(e.target.value)}
+                            placeholder="例如 AI subject tracking / 759 PDAF"
+                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">防抖</label>
+                          <input
+                            type="text"
+                            value={stabilization}
+                            onChange={(e) => setStabilization(e.target.value)}
+                            placeholder="例如 7 stops IBIS / Lens IS"
+                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">防尘防滴</label>
+                          <Select value={weatherSealed} onValueChange={(value: any) => setWeatherSealed(value)}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="unset">未填写</SelectItem>
+                              <SelectItem value="true">支持</SelectItem>
+                              <SelectItem value="false">不支持 / 未标注</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">测试样本</label>
+                          <input
+                            type="text"
+                            value={sampleVariation}
+                            onChange={(e) => setSampleVariation(e.target.value)}
+                            placeholder="零售版 / 工程样机 / 借测"
+                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">固件版本</label>
+                          <input
+                            type="text"
+                            value={firmwareVersion}
+                            onChange={(e) => setFirmwareVersion(e.target.value)}
+                            placeholder="例如 v2.01"
+                            className="w-full p-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+                      </div>
+                    </div>
 
 	                    {/* SEO Settings */}
                     <div className="space-y-4">

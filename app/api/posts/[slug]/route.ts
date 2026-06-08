@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createApiResponse, createErrorResponse, getCurrentUser, requireAdmin } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { buildPhotographyUpdateData } from '@/lib/post-metadata'
+import { buildGearUpdateData, buildPhotographyUpdateData } from '@/lib/post-metadata'
 import { slugify } from '@/lib/utils'
 
 // Force dynamic rendering for this route
@@ -154,6 +154,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
           metaTitle: metaTitle === undefined ? undefined : metaTitle?.trim() || null,
           metaDescription: metaDescription === undefined ? undefined : metaDescription?.trim() || null,
           ...buildPhotographyUpdateData(body),
+          ...buildGearUpdateData(body),
           publishedAt:
             status === 'PUBLISHED' && !existingPost.publishedAt
               ? new Date()

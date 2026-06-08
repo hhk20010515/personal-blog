@@ -8,6 +8,18 @@ const textFields = [
   'photoSeries',
 ] as const
 
+const gearTextFields = [
+  'gearBrand',
+  'gearModel',
+  'gearType',
+  'sensorFormat',
+  'dynamicRange',
+  'autofocusSystem',
+  'stabilization',
+  'sampleVariation',
+  'firmwareVersion',
+] as const
+
 function cleanText(value: unknown) {
   if (typeof value !== 'string') return null
   const trimmed = value.trim()
@@ -19,6 +31,25 @@ function cleanInteger(value: unknown) {
   const number = Number(value)
   if (!Number.isFinite(number) || number <= 0) return null
   return Math.round(number)
+}
+
+function cleanFloat(value: unknown, min?: number, max?: number) {
+  if (value === undefined || value === null || value === '') return null
+  const number = Number(value)
+  if (!Number.isFinite(number)) return null
+  if (min !== undefined && number < min) return null
+  if (max !== undefined && number > max) return null
+  return number
+}
+
+function cleanBoolean(value: unknown) {
+  if (value === undefined || value === null || value === '') return null
+  if (typeof value === 'boolean') return value
+  if (typeof value === 'string') {
+    if (value === 'true') return true
+    if (value === 'false') return false
+  }
+  return null
 }
 
 function cleanCoordinate(value: unknown, min: number, max: number) {
@@ -67,6 +98,43 @@ export function buildPhotographyUpdateData(body: Record<string, unknown>) {
   if (hasOwn(body, 'takenAt')) data.takenAt = cleanDate(body.takenAt)
   if (hasOwn(body, 'locationLat')) data.locationLat = cleanCoordinate(body.locationLat, -90, 90)
   if (hasOwn(body, 'locationLng')) data.locationLng = cleanCoordinate(body.locationLng, -180, 180)
+
+  return data
+}
+
+export function buildGearCreateData(body: Record<string, unknown>) {
+  return {
+    gearBrand: cleanText(body.gearBrand),
+    gearModel: cleanText(body.gearModel),
+    gearType: cleanText(body.gearType),
+    sensorFormat: cleanText(body.sensorFormat),
+    megapixels: cleanFloat(body.megapixels, 0),
+    weightGrams: cleanInteger(body.weightGrams),
+    priceCny: cleanInteger(body.priceCny),
+    reviewRating: cleanFloat(body.reviewRating, 0, 10),
+    dynamicRange: cleanText(body.dynamicRange),
+    autofocusSystem: cleanText(body.autofocusSystem),
+    stabilization: cleanText(body.stabilization),
+    weatherSealed: cleanBoolean(body.weatherSealed),
+    sampleVariation: cleanText(body.sampleVariation),
+    firmwareVersion: cleanText(body.firmwareVersion),
+  }
+}
+
+export function buildGearUpdateData(body: Record<string, unknown>) {
+  const data: Record<string, string | number | boolean | null | undefined> = {}
+
+  gearTextFields.forEach((field) => {
+    if (hasOwn(body, field)) {
+      data[field] = cleanText(body[field])
+    }
+  })
+
+  if (hasOwn(body, 'megapixels')) data.megapixels = cleanFloat(body.megapixels, 0)
+  if (hasOwn(body, 'weightGrams')) data.weightGrams = cleanInteger(body.weightGrams)
+  if (hasOwn(body, 'priceCny')) data.priceCny = cleanInteger(body.priceCny)
+  if (hasOwn(body, 'reviewRating')) data.reviewRating = cleanFloat(body.reviewRating, 0, 10)
+  if (hasOwn(body, 'weatherSealed')) data.weatherSealed = cleanBoolean(body.weatherSealed)
 
   return data
 }

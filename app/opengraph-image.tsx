@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'Kai 的摄影博客'
+export const alt = 'Luce'
 export const size = {
   width: 1200,
   height: 630,
@@ -9,7 +9,7 @@ export const size = {
 export const contentType = 'image/png'
 
 export default function Image() {
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Kai 的摄影博客'
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Luce'
 
   return new ImageResponse(
     (

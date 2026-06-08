@@ -159,7 +159,7 @@ export default async function PostPage({ params }: PostPageProps) {
     },
     publisher: {
       '@type': 'Organization',
-      name: 'Kai 的摄影博客',
+      name: 'Luce',
     },
     mainEntityOfPage: {
       '@type': 'WebPage',

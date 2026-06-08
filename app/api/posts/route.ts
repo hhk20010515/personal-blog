@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createApiResponse, createErrorResponse, getCurrentUser, requireAdmin } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { buildPhotographyCreateData } from '@/lib/post-metadata'
+import { buildGearCreateData, buildPhotographyCreateData } from '@/lib/post-metadata'
 import { slugify } from '@/lib/utils'
 
 // Force dynamic rendering for this route
@@ -79,6 +79,13 @@ export async function GET(req: NextRequest) {
         { title: { contains: search, mode: 'insensitive' } },
         { excerpt: { contains: search, mode: 'insensitive' } },
         { content: { contains: search, mode: 'insensitive' } },
+        { camera: { contains: search, mode: 'insensitive' } },
+        { lens: { contains: search, mode: 'insensitive' } },
+        { gearBrand: { contains: search, mode: 'insensitive' } },
+        { gearModel: { contains: search, mode: 'insensitive' } },
+        { gearType: { contains: search, mode: 'insensitive' } },
+        { sensorFormat: { contains: search, mode: 'insensitive' } },
+        { autofocusSystem: { contains: search, mode: 'insensitive' } },
         {
           tags: {
             some: {
@@ -189,6 +196,7 @@ export async function POST(req: NextRequest) {
         metaTitle: metaTitle?.trim() || null,
         metaDescription: metaDescription?.trim() || null,
         ...buildPhotographyCreateData(body),
+        ...buildGearCreateData(body),
         publishedAt: status === 'PUBLISHED' ? new Date() : null,
         authorId: user.id,
         categoryId: categoryId || null,

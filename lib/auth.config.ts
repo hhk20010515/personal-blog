@@ -21,6 +21,19 @@ const adminEmails = new Set(
 )
 
 const providers: AuthOptions['providers'] = []
+const hasRealEnvValue = (value?: string) => {
+  return Boolean(value && value.trim() && !value.includes('your-'))
+}
+
+const googleClientId = process.env.GOOGLE_CLIENT_ID
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET
+const wechatAppId = process.env.WECHAT_APP_ID
+const wechatAppSecret = process.env.WECHAT_APP_SECRET
+const emailServerHost = process.env.EMAIL_SERVER_HOST
+const emailServerPort = process.env.EMAIL_SERVER_PORT
+const emailServerUser = process.env.EMAIL_SERVER_USER
+const emailServerPassword = process.env.EMAIL_SERVER_PASSWORD
+const emailFrom = process.env.EMAIL_FROM
 
 function WeChatProvider({
   clientId,
@@ -100,42 +113,42 @@ function WeChatProvider({
   }
 }
 
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+if (hasRealEnvValue(googleClientId) && hasRealEnvValue(googleClientSecret)) {
   providers.push(
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: googleClientId!,
+      clientSecret: googleClientSecret!,
     })
   )
 }
 
-if (process.env.WECHAT_APP_ID && process.env.WECHAT_APP_SECRET) {
+if (hasRealEnvValue(wechatAppId) && hasRealEnvValue(wechatAppSecret)) {
   providers.push(
     WeChatProvider({
-      clientId: process.env.WECHAT_APP_ID,
-      clientSecret: process.env.WECHAT_APP_SECRET,
+      clientId: wechatAppId!,
+      clientSecret: wechatAppSecret!,
     })
   )
 }
 
 if (
-  process.env.EMAIL_SERVER_HOST &&
-  process.env.EMAIL_SERVER_PORT &&
-  process.env.EMAIL_SERVER_USER &&
-  process.env.EMAIL_SERVER_PASSWORD &&
-  process.env.EMAIL_FROM
+  hasRealEnvValue(emailServerHost) &&
+  hasRealEnvValue(emailServerPort) &&
+  hasRealEnvValue(emailServerUser) &&
+  hasRealEnvValue(emailServerPassword) &&
+  hasRealEnvValue(emailFrom)
 ) {
   providers.push(
     EmailProvider({
       server: {
-        host: process.env.EMAIL_SERVER_HOST,
-        port: Number(process.env.EMAIL_SERVER_PORT),
+        host: emailServerHost!,
+        port: Number(emailServerPort),
         auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD,
+          user: emailServerUser!,
+          pass: emailServerPassword!,
         },
       },
-      from: process.env.EMAIL_FROM,
+      from: emailFrom!,
       sendVerificationRequest,
     })
   )
