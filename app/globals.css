@@ -65,7 +65,15 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
+}
+
+::selection {
+  background: rgba(245, 158, 11, 0.28);
+  color: inherit;
 }
 
 /* Apple-inspired design system */
@@ -149,4 +157,16 @@ html {
 .card-hover:hover {
   transform: translateY(-4px);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.portfolio-surface {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015)),
+    #0b0b0a;
+}
+
+.image-loading-surface {
+  background:
+    linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(103, 232, 249, 0.1)),
+    #11110f;
 }

@@ -43,10 +43,10 @@ export default function Header() {
   return (
     <header
       className={cn(
-        'fixed top-0 z-50 w-full transition-all duration-300',
+        'fixed top-0 z-50 w-full border-b transition-all duration-300',
         isScrolled
-          ? 'glass-effect py-2 shadow-lg'
-          : 'bg-transparent py-4'
+          ? 'border-border/50 bg-background/80 py-2 shadow-sm backdrop-blur-xl'
+          : 'border-white/10 bg-background/60 py-3 backdrop-blur-xl'
       )}
     >
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -68,7 +68,7 @@ export default function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-foreground/80 hover:text-foreground transition-colors duration-200 font-medium"
+              className="text-sm font-medium text-foreground/75 transition-colors duration-200 hover:text-foreground"
               >
                 {item.name}
               </Link>
@@ -186,7 +186,7 @@ export default function Header() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="text-foreground/80 hover:text-foreground transition-colors duration-200 font-medium py-2"
+              className="py-2 text-sm font-medium text-foreground/75 transition-colors duration-200 hover:text-foreground"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item.name}

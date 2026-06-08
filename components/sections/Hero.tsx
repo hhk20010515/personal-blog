@@ -1,173 +1,140 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ChevronDown, Camera, Code, Heart } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { ArrowRight, Aperture, Camera, Code2, MoveDown } from 'lucide-react'
 
-const fadeInUp = {
-  initial: { opacity: 0, y: 60 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] }
-}
+const heroImages = [
+  {
+    src: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1800&q=85',
+    label: 'Mountain Light',
+    meta: 'f/2.8 · 35mm · ISO 200',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=85',
+    label: 'Urban Night',
+    meta: 'Long exposure',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=900&q=85',
+    label: 'Forest Study',
+    meta: 'Natural color',
+  },
+]
 
-const staggerContainer = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-}
+const stats = [
+  { value: 'PHOTO', label: '影像叙事' },
+  { value: 'TECH', label: '前沿观察' },
+  { value: 'FIELD', label: '现场记录' },
+]
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 hero-gradient" />
-      
-      {/* Floating elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          animate={{
-            y: [0, -20, 0],
-            rotate: [0, 5, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            repeatType: 'reverse',
-          }}
-          className="absolute top-20 left-10 w-20 h-20 rounded-full bg-gradient-to-r from-blue-400/20 to-purple-400/20 blur-xl"
+    <section className="relative min-h-screen overflow-hidden bg-[#080807] text-white">
+      <div className="absolute inset-0">
+        <img
+          src={heroImages[0].src}
+          alt="山谷与光线构成的摄影首屏背景"
+          className="h-full w-full object-cover"
         />
-        <motion.div
-          animate={{
-            y: [0, 15, 0],
-            rotate: [0, -3, 0],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            repeatType: 'reverse',
-          }}
-          className="absolute top-40 right-20 w-32 h-32 rounded-full bg-gradient-to-r from-pink-400/20 to-red-400/20 blur-xl"
-        />
-        <motion.div
-          animate={{
-            y: [0, -10, 0],
-            rotate: [0, 2, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            repeatType: 'reverse',
-          }}
-          className="absolute bottom-40 left-1/4 w-16 h-16 rounded-full bg-gradient-to-r from-green-400/20 to-blue-400/20 blur-xl"
-        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,8,7,0.92)_0%,rgba(8,8,7,0.64)_38%,rgba(8,8,7,0.14)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#080807] to-transparent" />
       </div>
 
-      {/* Main content */}
-      <motion.div
-        variants={staggerContainer}
-        initial="initial"
-        animate="animate"
-        className="relative z-10 text-center max-w-5xl mx-auto px-4 sm:px-6 lg:px-8"
-      >
-        <motion.div
-          variants={fadeInUp}
-          className="mb-6"
-        >
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight">
-            <span className="gradient-text">分享见解</span>
-            <br />
-            <span className="text-foreground">创造价值</span>
-          </h1>
-        </motion.div>
-
-        <motion.p
-          variants={fadeInUp}
-          className="text-xl sm:text-2xl text-foreground/80 mb-12 leading-relaxed max-w-3xl mx-auto"
-        >
-          在这里，我分享关于计算机技术、摄影艺术和生活感悟的见解。
-          <br />
-          与志同道合的朋友一起探索、学习、成长。
-        </motion.p>
-
-        <motion.div
-          variants={fadeInUp}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
-        >
-          <Button asChild size="lg" className="px-8 py-6 text-lg">
-            <Link href="/explore">
-              开始探索
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="px-8 py-6 text-lg">
-            <Link href="/write">
-              分享见解
-            </Link>
-          </Button>
-        </motion.div>
-
-        {/* Feature cards */}
-        <motion.div
-          variants={fadeInUp}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
-        >
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col justify-center px-4 pb-16 pt-28 sm:px-6 lg:px-8">
+        <div className="grid items-end gap-12 lg:grid-cols-[minmax(0,1.05fr)_0.95fr]">
           <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="glass-effect rounded-2xl p-6 text-center card-hover"
+            initial={{ opacity: 0, y: 34 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="max-w-3xl"
           >
-            <Code className="h-12 w-12 mx-auto mb-4 text-blue-500" />
-            <h3 className="text-xl font-semibold mb-2">技术分享</h3>
-            <p className="text-foreground/70">
-              最新的技术趋势、编程技巧和开发经验分享
+            <div className="mb-6 inline-flex items-center gap-3 border border-white/20 bg-white/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.28em] text-white/80 backdrop-blur-md">
+              <Aperture className="h-4 w-4 text-amber-200" />
+              Visual Journal / Tech Notes
+            </div>
+            <h1 className="max-w-4xl text-5xl font-semibold leading-[0.96] tracking-normal sm:text-6xl lg:text-7xl">
+              用影像建立审美，
+              <span className="block text-white/70">用技术解释世界。</span>
+            </h1>
+            <p className="mt-7 max-w-2xl text-base leading-8 text-white/70 sm:text-lg">
+              这里记录摄影作品、拍摄现场、器材与后期思考，也持续观察 AI、Web、工程系统和数字创作工具的变化。
             </p>
+
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/photography"
+                className="group inline-flex items-center justify-center gap-3 bg-white px-6 py-3 text-sm font-semibold text-neutral-950 transition duration-300 hover:bg-amber-100"
+              >
+                进入摄影作品集
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+              <Link
+                href="/tech"
+                className="group inline-flex items-center justify-center gap-3 border border-white/20 bg-white/[0.08] px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition duration-300 hover:border-cyan-200/50 hover:bg-cyan-200/10"
+              >
+                阅读技术观察
+                <Code2 className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            </div>
+
+            <div className="mt-12 grid max-w-xl grid-cols-3 border-y border-white/10 py-5">
+              {stats.map((item) => (
+                <div key={item.value} className="border-white/10 px-4 first:pl-0 [&:not(:last-child)]:border-r">
+                  <div className="text-sm font-semibold tracking-[0.22em] text-amber-100">{item.value}</div>
+                  <div className="mt-2 text-xs text-white/50">{item.label}</div>
+                </div>
+              ))}
+            </div>
           </motion.div>
 
           <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="glass-effect rounded-2xl p-6 text-center card-hover"
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.15, ease: 'easeOut' }}
+            className="hidden lg:block"
           >
-            <Camera className="h-12 w-12 mx-auto mb-4 text-purple-500" />
-            <h3 className="text-xl font-semibold mb-2">摄影艺术</h3>
-            <p className="text-foreground/70">
-              用镜头记录美好瞬间，分享摄影技巧和创作心得
-            </p>
+            <div className="ml-auto w-full max-w-xl">
+              <div className="mb-4 flex items-center justify-between text-xs uppercase tracking-[0.24em] text-white/50">
+                <span>Selected frames</span>
+                <Camera className="h-4 w-4 text-white/70" />
+              </div>
+              <div className="grid grid-cols-[1fr_0.76fr] gap-4">
+                <div className="group relative aspect-[4/5] overflow-hidden border border-white/10 bg-white/[0.08]">
+                  <img
+                    src={heroImages[1].src}
+                    alt="城市夜景摄影作品"
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                  <div className="absolute bottom-5 left-5 right-5">
+                    <p className="text-lg font-semibold">{heroImages[1].label}</p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.18em] text-white/50">{heroImages[1].meta}</p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <div className="group relative aspect-[4/3] overflow-hidden border border-white/10 bg-white/[0.08]">
+                    <img
+                      src={heroImages[2].src}
+                      alt="森林光线摄影作品"
+                      className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="border border-white/10 bg-white/10 p-5 backdrop-blur-md">
+                    <p className="text-xs uppercase tracking-[0.22em] text-cyan-100/70">Current focus</p>
+                    <p className="mt-4 text-2xl font-semibold leading-tight">AI image workflow, visual systems, field notes.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </motion.div>
+        </div>
 
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="glass-effect rounded-2xl p-6 text-center card-hover"
-          >
-            <Heart className="h-12 w-12 mx-auto mb-4 text-pink-500" />
-            <h3 className="text-xl font-semibold mb-2">生活感悟</h3>
-            <p className="text-foreground/70">
-              生活中的思考与感悟，与你分享人生的美好
-            </p>
-          </motion.div>
-        </motion.div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          variants={fadeInUp}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-        >
-          <motion.div
-            animate={{
-              y: [0, 10, 0],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              repeatType: 'reverse',
-            }}
-            className="flex flex-col items-center"
-          >
-            <span className="text-sm text-foreground/60 mb-2">继续探索</span>
-            <ChevronDown className="h-6 w-6 text-foreground/60" />
-          </motion.div>
-        </motion.div>
-      </motion.div>
+        <div className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 items-center gap-2 text-xs uppercase tracking-[0.22em] text-white/50 md:flex">
+          <MoveDown className="h-4 w-4" />
+          Scroll
+        </div>
+      </div>
     </section>
   )
 }
