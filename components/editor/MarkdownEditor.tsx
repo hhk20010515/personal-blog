@@ -240,7 +240,7 @@ export default function MarkdownEditor({
           </div>
         ) : (
           <div 
-            className="p-4 prose prose-sm max-w-none min-h-96"
+            className="p-4 prose dark:prose-invert prose-sm max-w-none min-h-96"
             dangerouslySetInnerHTML={{ __html: markdownToSafeHtml(value) }}
           />
         )}

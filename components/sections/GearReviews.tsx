@@ -54,21 +54,21 @@ export default function GearReviews() {
   }, [])
 
   return (
-    <section className="relative overflow-hidden border-t border-cyan-300/10 bg-[#05070c] text-white">
+    <section className="relative overflow-hidden border-t border-cyan-700/10 dark:border-cyan-300/10 bg-background text-foreground">
       <div className="cyber-grid absolute inset-0 opacity-80" />
       <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="mb-4 inline-flex items-center gap-2 text-xs uppercase tracking-[0.28em] text-cyan-100/60">
+            <p className="mb-4 inline-flex items-center gap-2 text-xs uppercase tracking-[0.28em] text-cyan-700/60 dark:text-cyan-100/60">
               <Cpu className="h-4 w-4" />
               Gear review lab
             </p>
             <h2 className="text-3xl font-semibold tracking-normal sm:text-5xl">摄影器材测评</h2>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-white/50">
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-foreground/50">
               支持用户分享相机、镜头、灯光、稳定器和后期工具的硬核参数，让体验和数据一起说话。
             </p>
           </div>
-          <Link href="/gear" className="group inline-flex items-center gap-2 text-sm font-semibold text-cyan-100">
+          <Link href="/gear" className="group inline-flex items-center gap-2 text-sm font-semibold text-cyan-700 dark:text-cyan-100">
             进入测评板块
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
@@ -86,20 +86,20 @@ export default function GearReviews() {
             >
               <Link
                 href={review.slug ? `/posts/${review.slug}` : '/gear'}
-                className="block h-full border border-cyan-300/12 bg-white/[0.04] p-6 transition hover:-translate-y-1 hover:border-cyan-300/40 hover:bg-cyan-300/[0.07]"
+                className="block h-full border border-cyan-700/12 dark:border-cyan-300/12 bg-foreground/[0.04] p-6 transition hover:-translate-y-1 hover:border-cyan-700/40 dark:hover:border-cyan-300/40 hover:bg-cyan-700/[0.07] dark:hover:bg-cyan-300/[0.07]"
               >
                 <div className="mb-8 flex items-center justify-between">
-                  <div className="border border-cyan-300/20 bg-cyan-300/[0.08] p-3 text-cyan-100">
+                  <div className="border border-cyan-700/20 dark:border-cyan-300/20 bg-cyan-700/[0.08] dark:bg-cyan-300/[0.08] p-3 text-cyan-700 dark:text-cyan-100">
                     <Cpu className="h-5 w-5" />
                   </div>
-                  <span className="text-xs uppercase tracking-[0.2em] text-white/40">
+                  <span className="text-xs uppercase tracking-[0.2em] text-foreground/40">
                     {review.reviewRating ? `${review.reviewRating.toFixed(1)} / 10` : review.spec || review.gearType || 'Review'}
                   </span>
                 </div>
-                <h3 className="text-2xl font-semibold leading-tight tracking-normal transition group-hover:text-cyan-100">
+                <h3 className="text-2xl font-semibold leading-tight tracking-normal transition group-hover:text-cyan-700 dark:group-hover:text-cyan-100">
                   {review.title}
                 </h3>
-                <p className="mt-4 line-clamp-3 text-sm leading-6 text-white/50">{review.excerpt || '暂无摘要'}</p>
+                <p className="mt-4 line-clamp-3 text-sm leading-6 text-foreground/50">{review.excerpt || '暂无摘要'}</p>
 
                 <div className="mt-6 grid grid-cols-3 gap-2 text-xs">
                   <Spec icon={Gauge} label="规格" value={review.sensorFormat || review.gearBrand || '-'} />
@@ -117,10 +117,10 @@ export default function GearReviews() {
 
 function Spec({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
-    <div className="border border-white/10 bg-black/20 p-3">
-      <Icon className="mb-2 h-3.5 w-3.5 text-cyan-200" />
-      <p className="text-white/40">{label}</p>
-      <p className="mt-1 truncate text-white/75">{value}</p>
+    <div className="border border-foreground/10 bg-foreground/[0.04] p-3">
+      <Icon className="mb-2 h-3.5 w-3.5 text-cyan-700 dark:text-cyan-200" />
+      <p className="text-foreground/40">{label}</p>
+      <p className="mt-1 truncate text-foreground/75">{value}</p>
     </div>
   )
 }

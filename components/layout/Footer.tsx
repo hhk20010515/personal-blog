@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Github, Twitter, Mail, Heart } from 'lucide-react'
+import { Github, Instagram, Twitter, Mail, Heart } from 'lucide-react'
+import { siteConfig } from '@/lib/site'
 
 const navigation = {
   main: [
@@ -14,8 +15,7 @@ const navigation = {
     { name: '关于', href: '/about' },
   ],
   support: [
-    { name: '联系我们', href: '/contact' },
-    { name: '友情链接', href: '/links' },
+    { name: '联系', href: '/contact' },
     { name: 'RSS订阅', href: '/rss' },
   ],
   legal: [
@@ -26,27 +26,17 @@ const navigation = {
 }
 
 const socialLinks = [
-  {
-    name: 'GitHub',
-    href: process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com',
-    icon: Github,
-  },
-  {
-    name: 'Twitter',
-    href: process.env.NEXT_PUBLIC_TWITTER_URL || 'https://twitter.com',
-    icon: Twitter,
-  },
-  {
-    name: 'Email',
-    href: `mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@example.com'}`,
-    icon: Mail,
-  },
-]
-const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Luce'
+  { name: 'GitHub', href: siteConfig.social.github, icon: Github },
+  { name: 'Instagram', href: siteConfig.social.instagram, icon: Instagram },
+  { name: 'X / Twitter', href: siteConfig.social.twitter, icon: Twitter },
+  { name: 'Email', href: siteConfig.contactEmail ? `mailto:${siteConfig.contactEmail}` : '', icon: Mail },
+].filter((item) => item.href)
+
+const siteName = siteConfig.name
 
 export default function Footer() {
   return (
-    <footer className="border-t border-cyan-300/10 bg-[#05070c]">
+    <footer className="border-t border-cyan-700/10 dark:border-cyan-300/10 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
@@ -54,8 +44,8 @@ export default function Footer() {
             <Link href="/" className="inline-block mb-4">
               <span className="text-2xl font-bold gradient-text">{siteName}</span>
             </Link>
-            <p className="text-white/60 mb-6 max-w-md leading-7">
-              面向所有摄影爱好者的影像作品、器材测评与前沿技术观察平台。记录光线、参数、设备体验和数字创作方法。
+            <p className="text-foreground/60 mb-6 max-w-md leading-7">
+              {siteConfig.tagline}
             </p>
             
             {/* Social Links */}
@@ -66,11 +56,12 @@ export default function Footer() {
                   <motion.a
                     key={item.name}
                     href={item.href}
+                    aria-label={item.name}
                     target="_blank"
                     rel="noopener noreferrer"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex h-10 w-10 items-center justify-center border border-white/10 bg-white/[0.04] text-white/50 backdrop-blur transition-all duration-200 hover:border-cyan-300/40 hover:bg-cyan-300/10 hover:text-cyan-100"
+                    className="flex h-10 w-10 items-center justify-center border border-foreground/10 bg-foreground/[0.04] text-foreground/50 backdrop-blur transition-all duration-200 hover:border-cyan-700/40 dark:hover:border-cyan-300/40 hover:bg-cyan-700/10 dark:hover:bg-cyan-300/10 hover:text-cyan-700 dark:hover:text-cyan-100"
                   >
                     <Icon className="h-5 w-5" />
                   </motion.a>
@@ -81,13 +72,13 @@ export default function Footer() {
 
           {/* Main Navigation */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white">导航</h3>
+            <h3 className="text-lg font-semibold mb-6 text-foreground">导航</h3>
             <ul className="space-y-3">
               {navigation.main.map((item) => (
                 <li key={item.name}>
                   <Link
                     href={item.href}
-                    className="text-white/50 hover:text-cyan-100 transition-colors"
+                    className="text-foreground/50 hover:text-cyan-700 dark:hover:text-cyan-100 transition-colors"
                   >
                     {item.name}
                   </Link>
@@ -98,13 +89,13 @@ export default function Footer() {
 
           {/* Support */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white">支持</h3>
+            <h3 className="text-lg font-semibold mb-6 text-foreground">支持</h3>
             <ul className="space-y-3">
               {navigation.support.map((item) => (
                 <li key={item.name}>
                   <Link
                     href={item.href}
-                    className="text-white/50 hover:text-cyan-100 transition-colors"
+                    className="text-foreground/50 hover:text-cyan-700 dark:hover:text-cyan-100 transition-colors"
                   >
                     {item.name}
                   </Link>
@@ -115,8 +106,8 @@ export default function Footer() {
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <div className="flex items-center text-sm text-white/50 mb-4 md:mb-0">
+        <div className="border-t border-foreground/10 pt-8 flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center text-sm text-foreground/50 mb-4 md:mb-0">
             <span>© {new Date().getFullYear()} {siteName}. 保留所有权利.</span>
           </div>
 
@@ -125,7 +116,7 @@ export default function Footer() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm text-white/50 hover:text-cyan-100 transition-colors"
+                className="text-sm text-foreground/50 hover:text-cyan-700 dark:hover:text-cyan-100 transition-colors"
               >
                 {item.name}
               </Link>
@@ -134,9 +125,9 @@ export default function Footer() {
         </div>
 
         {/* Made with love */}
-        <div className="text-center mt-8 pt-8 border-t border-white/10">
-          <p className="flex items-center justify-center text-sm text-white/40">
-            用 <Heart className="h-4 w-4 mx-2 text-cyan-300" /> 和 Next.js 制作
+        <div className="text-center mt-8 pt-8 border-t border-foreground/10">
+          <p className="flex items-center justify-center text-sm text-foreground/40">
+            用 <Heart className="h-4 w-4 mx-2 text-cyan-700 dark:text-cyan-300" /> 和 Next.js 制作
           </p>
         </div>
       </div>

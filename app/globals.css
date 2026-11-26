@@ -3,7 +3,40 @@
 @tailwind utilities;
 
 @layer base {
+  /* 浅色：偏暖的相纸白，配合胶片风格 */
   :root {
+    --background: 40 23% 97%;
+    --foreground: 30 10% 10%;
+    --card: 40 20% 99%;
+    --card-foreground: 30 10% 10%;
+    --popover: 40 20% 99%;
+    --popover-foreground: 30 10% 10%;
+    --primary: 189 85% 32%;
+    --primary-foreground: 40 23% 97%;
+    --secondary: 38 16% 91%;
+    --secondary-foreground: 30 10% 12%;
+    --muted: 38 16% 91%;
+    --muted-foreground: 30 6% 38%;
+    --accent: 38 16% 91%;
+    --accent-foreground: 30 10% 12%;
+    --destructive: 0 72% 46%;
+    --destructive-foreground: 40 23% 97%;
+    --border: 35 12% 84%;
+    --input: 35 12% 84%;
+    --ring: 189 85% 32%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 51%;
+    --chart-2: 173 58% 34%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 46%;
+    --chart-5: 27 87% 52%;
+    /* 摄影版面底色（作品集页面的暖黑/相纸色），只跟随整站主题 */
+    --canvas: 40 23% 96%;
+    --canvas-2: 38 18% 92%;
+  }
+
+  /* 深色：保持原来的配色 */
+  .dark {
     --background: 224 71% 4%;
     --foreground: 210 40% 98%;
     --card: 224 54% 7%;
@@ -23,7 +56,6 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 187 92% 55%;
-    --radius: 0.5rem;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -31,31 +63,10 @@
     --chart-5: 27 87% 67%;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+  html.dark {
+    --canvas: 60 7% 3%;
+    --canvas-2: 60 4% 5%;
+    color-scheme: dark;
   }
 }
 
@@ -121,9 +132,15 @@ html {
 
 /* Apple-style gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0e7490 0%, #b45309 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .gradient-text {
+  background: linear-gradient(135deg, #67e8f9 0%, #fcd34d 100%);
+  -webkit-background-clip: text;
   background-clip: text;
 }
 
@@ -177,4 +194,17 @@ html {
     linear-gradient(90deg, rgba(103, 232, 249, 0.08) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: linear-gradient(to bottom, black, transparent 76%);
+}
+
+/* 首屏照片底部渐变：浅色模式只在最底部过渡到相纸色，避免压住白色文字 */
+.hero-fade {
+  height: 4rem;
+}
+
+html.dark .hero-fade {
+  height: 33%;
+}
+
+html.dark .hero-fade-lg {
+  height: 50%;
 }

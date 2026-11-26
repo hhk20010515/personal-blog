@@ -82,23 +82,23 @@ function SearchContent() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-[#05070c] text-white">
+      <main className="min-h-screen bg-background text-foreground">
         <section className="relative overflow-hidden px-4 pb-14 pt-32 sm:px-6 lg:px-8">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(0,229,255,0.16),transparent_30%),radial-gradient(circle_at_90%_20%,rgba(255,0,128,0.12),transparent_34%)]" />
           <div className="relative mx-auto max-w-5xl">
-            <p className="mb-4 text-xs uppercase tracking-[0.3em] text-cyan-100/55">Search Luce</p>
+            <p className="mb-4 text-xs uppercase tracking-[0.3em] text-cyan-700/55 dark:text-cyan-100/55">Search Luce</p>
             <h1 className="text-4xl font-semibold tracking-normal sm:text-6xl">搜索摄影、器材与技术内容</h1>
-            <form onSubmit={submitSearch} className="mt-8 flex flex-col gap-3 border border-cyan-300/15 bg-white/[0.04] p-3 sm:flex-row">
+            <form onSubmit={submitSearch} className="mt-8 flex flex-col gap-3 border border-cyan-700/15 dark:border-cyan-300/15 bg-foreground/[0.04] p-3 sm:flex-row">
               <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-cyan-100/45" />
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-cyan-700/45 dark:text-cyan-100/45" />
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="输入关键词，例如 X100VI、街头摄影、AI 后期..."
-                  className="h-12 w-full bg-transparent pl-12 pr-4 text-white outline-none placeholder:text-white/40"
+                  className="h-12 w-full bg-transparent pl-12 pr-4 text-foreground outline-none placeholder:text-foreground/40"
                 />
               </div>
-              <button className="bg-cyan-300 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-100">
+              <button className="bg-cyan-700 dark:bg-cyan-300 px-6 py-3 text-sm font-semibold text-background transition hover:bg-cyan-700 dark:hover:bg-cyan-100">
                 搜索
               </button>
             </form>
@@ -107,9 +107,9 @@ function SearchContent() {
 
         <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
           {loading ? (
-            <div className="border border-white/10 bg-white/[0.035] p-8 text-white/50">正在搜索...</div>
+            <div className="border border-foreground/10 bg-foreground/[0.035] p-8 text-foreground/50">正在搜索...</div>
           ) : posts.length === 0 ? (
-            <div className="border border-white/10 bg-white/[0.035] p-8 text-white/50">
+            <div className="border border-foreground/10 bg-foreground/[0.035] p-8 text-foreground/50">
               {initialQuery ? '没有找到匹配内容。' : '输入关键词后可搜索标题、摘要、正文和标签。'}
             </div>
           ) : (
@@ -121,27 +121,27 @@ function SearchContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.03 }}
                 >
-                  <Link href={`/posts/${post.slug}`} className="group grid gap-5 border border-white/10 bg-white/[0.035] p-5 transition hover:border-cyan-300/30 hover:bg-cyan-300/[0.06] md:grid-cols-[1fr_auto]">
+                  <Link href={`/posts/${post.slug}`} className="group grid gap-5 border border-foreground/10 bg-foreground/[0.035] p-5 transition hover:border-cyan-700/30 dark:hover:border-cyan-300/30 hover:bg-cyan-700/[0.06] dark:hover:bg-cyan-300/[0.06] md:grid-cols-[1fr_auto]">
                     <div>
-                      <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-white/50">
-                        {post.category && <span className="border border-white/10 px-2 py-1">{post.category.name}</span>}
+                      <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-foreground/50">
+                        {post.category && <span className="border border-foreground/10 px-2 py-1">{post.category.name}</span>}
                         {post.gearBrand && (
-                          <span className="inline-flex items-center gap-1 text-cyan-100/70">
+                          <span className="inline-flex items-center gap-1 text-cyan-700/70 dark:text-cyan-100/70">
                             <Cpu className="h-3.5 w-3.5" />
                             {post.gearBrand} {post.gearModel}
                           </span>
                         )}
                         {post.camera && (
-                          <span className="inline-flex items-center gap-1 text-amber-100/70">
+                          <span className="inline-flex items-center gap-1 text-amber-700/70 dark:text-amber-100/70">
                             <Camera className="h-3.5 w-3.5" />
                             {post.camera}
                           </span>
                         )}
                       </div>
-                      <h2 className="text-2xl font-semibold tracking-normal transition group-hover:text-cyan-100">{post.title}</h2>
-                      <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/50">{post.excerpt || '暂无摘要'}</p>
+                      <h2 className="text-2xl font-semibold tracking-normal transition group-hover:text-cyan-700 dark:group-hover:text-cyan-100">{post.title}</h2>
+                      <p className="mt-3 line-clamp-2 text-sm leading-6 text-foreground/50">{post.excerpt || '暂无摘要'}</p>
                     </div>
-                    <div className="flex items-center text-sm font-semibold text-cyan-100">
+                    <div className="flex items-center text-sm font-semibold text-cyan-700 dark:text-cyan-100">
                       打开
                       <ArrowRight className="ml-2 h-4 w-4 transition group-hover:translate-x-1" />
                     </div>
@@ -159,7 +159,7 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#05070c] text-white" />}>
+    <Suspense fallback={<div className="min-h-screen bg-background text-foreground" />}>
       <SearchContent />
     </Suspense>
   )

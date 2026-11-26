@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import ThemeToggle from '@/components/layout/ThemeToggle'
 
 const navigation = [
   { name: '首页', href: '/' },
@@ -75,8 +76,8 @@ export default function Header() {
       className={cn(
         'fixed top-0 z-50 w-full border-b transition-all duration-300',
         isScrolled
-          ? 'border-cyan-300/20 bg-[#05070c]/85 py-2 shadow-[0_12px_50px_rgba(0,229,255,0.08)] backdrop-blur-xl'
-          : 'border-cyan-300/10 bg-[#05070c]/70 py-3 backdrop-blur-xl'
+          ? 'border-cyan-700/20 dark:border-cyan-300/20 bg-background/85 py-2 shadow-[0_12px_50px_rgba(0,229,255,0.08)] backdrop-blur-xl'
+          : 'border-cyan-700/10 dark:border-cyan-300/10 bg-background/70 py-3 backdrop-blur-xl'
       )}
     >
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -88,8 +89,8 @@ export default function Header() {
               whileTap={{ scale: 0.95 }}
               className="flex items-center gap-3"
             >
-              <span className="h-2.5 w-2.5 bg-cyan-300 shadow-[0_0_22px_rgba(103,232,249,0.9)]" />
-              <span className="text-2xl font-semibold tracking-[0.18em] text-white">
+              <span className="h-2.5 w-2.5 bg-cyan-700 dark:bg-cyan-300 shadow-[0_0_22px_rgba(103,232,249,0.9)]" />
+              <span className="text-2xl font-semibold tracking-[0.18em] text-foreground">
                 {siteName}
               </span>
             </motion.div>
@@ -101,7 +102,7 @@ export default function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm font-medium text-white/66 transition-colors duration-200 hover:text-cyan-100"
+                className="text-sm font-medium text-foreground/66 transition-colors duration-200 hover:text-cyan-700 dark:hover:text-cyan-100"
               >
                 {locale === 'en' ? translateNav(item.name) : item.name}
               </Link>
@@ -113,20 +114,22 @@ export default function Header() {
             {/* Search */}
             <form onSubmit={submitSearch} className="hidden md:block">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-100/45" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-700/45 dark:text-cyan-100/45" />
                 <input
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder={locale === 'en' ? 'Search' : '搜索'}
-                  className="h-9 w-44 border border-white/10 bg-white/[0.06] pl-9 pr-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:w-56 focus:border-cyan-300/50 focus:bg-cyan-300/[0.08]"
+                  className="h-9 w-44 border border-foreground/10 bg-foreground/[0.06] pl-9 pr-3 text-sm text-foreground outline-none transition placeholder:text-foreground/40 focus:w-56 focus:border-cyan-700/50 dark:focus:border-cyan-300/50 focus:bg-cyan-700/[0.08] dark:focus:bg-cyan-300/[0.08]"
                 />
               </div>
             </form>
 
+            <ThemeToggle />
+
             <Button
               variant="ghost"
               size="sm"
-              className="hidden gap-2 px-2 text-white/70 hover:text-cyan-100 sm:flex"
+              className="hidden gap-2 px-2 text-foreground/70 hover:text-cyan-700 dark:hover:text-cyan-100 sm:flex"
               onClick={toggleLocale}
             >
               <Languages className="h-4 w-4" />
@@ -196,7 +199,7 @@ export default function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button onClick={() => signIn()} size="sm" className="border border-cyan-300/25 bg-cyan-300/10 text-cyan-50 hover:bg-cyan-300/20">
+              <Button onClick={() => signIn()} size="sm" className="border border-cyan-700/25 dark:border-cyan-300/25 bg-cyan-700/10 dark:bg-cyan-300/10 text-cyan-700 dark:text-cyan-50 hover:bg-cyan-700/20 dark:hover:bg-cyan-300/20">
                 {locale === 'en' ? 'Sign in' : '登录'}
               </Button>
             )}
@@ -207,7 +210,7 @@ export default function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 text-white"
+                className="p-2 text-foreground"
               >
                 {isMobileMenuOpen ? (
                   <X className="h-5 w-5" />
@@ -227,16 +230,16 @@ export default function Header() {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="mt-4 border-t border-cyan-300/10 pb-4 lg:hidden"
+              className="mt-4 border-t border-cyan-700/10 dark:border-cyan-300/10 pb-4 lg:hidden"
             >
               <form onSubmit={submitSearch} className="pt-4">
                 <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-100/45" />
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-700/45 dark:text-cyan-100/45" />
                   <input
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder={locale === 'en' ? 'Search posts and gear reviews' : '搜索文章和器材测评'}
-                    className="h-11 w-full border border-white/10 bg-white/[0.06] pl-9 pr-3 text-sm text-white outline-none placeholder:text-white/40 focus:border-cyan-300/50"
+                    className="h-11 w-full border border-foreground/10 bg-foreground/[0.06] pl-9 pr-3 text-sm text-foreground outline-none placeholder:text-foreground/40 focus:border-cyan-700/50 dark:focus:border-cyan-300/50"
                   />
                 </div>
               </form>
@@ -246,7 +249,7 @@ export default function Header() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="py-2 text-sm font-medium text-white/70 transition-colors duration-200 hover:text-cyan-100"
+                    className="py-2 text-sm font-medium text-foreground/70 transition-colors duration-200 hover:text-cyan-700 dark:hover:text-cyan-100"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {locale === 'en' ? translateNav(item.name) : item.name}
@@ -255,7 +258,7 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={toggleLocale}
-                  className="flex items-center gap-2 py-2 text-left text-sm font-medium text-white/70 hover:text-cyan-100"
+                  className="flex items-center gap-2 py-2 text-left text-sm font-medium text-foreground/70 hover:text-cyan-700 dark:hover:text-cyan-100"
                 >
                   <Languages className="h-4 w-4" />
                   {locale === 'en' ? '切换中文' : 'English'}

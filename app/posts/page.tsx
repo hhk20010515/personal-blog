@@ -15,6 +15,7 @@ interface Post {
   title: string
   slug: string
   excerpt: string | null
+  photoSeries?: string | null
   content: string
   tags: Array<{
     tag: {
@@ -64,6 +65,11 @@ function PostsContent() {
     if (category) {
       setSelectedCategory(category.toLowerCase())
     }
+
+    const query = searchParams.get('q')
+    if (query) {
+      setSearchTerm(query)
+    }
   }, [searchParams])
 
   useEffect(() => {
@@ -110,6 +116,7 @@ function PostsContent() {
         return (
           post.title.toLowerCase().includes(normalizedSearch) ||
           (post.excerpt || '').toLowerCase().includes(normalizedSearch) ||
+          (post.photoSeries || '').toLowerCase().includes(normalizedSearch) ||
           post.tags.some(({ tag }) => tag.name.toLowerCase().includes(normalizedSearch))
         )
       })
@@ -147,7 +154,7 @@ function PostsContent() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-[#05070c] text-white">
+      <main className="min-h-screen bg-background text-foreground">
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
@@ -159,7 +166,7 @@ function PostsContent() {
               <h1 className="text-4xl md:text-5xl font-bold mb-6">
                 所有文章
               </h1>
-              <p className="text-xl text-white/60 max-w-2xl mx-auto">
+              <p className="text-xl text-foreground/60 max-w-2xl mx-auto">
                 探索摄影作品、器材测评和前沿技术观察，发现更多有价值的观点和参数记录
               </p>
             </motion.div>
@@ -168,7 +175,7 @@ function PostsContent() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="mb-8 border border-cyan-300/12 bg-white/[0.045] p-6 backdrop-blur-xl"
+              className="mb-8 border border-cyan-700/12 dark:border-cyan-300/12 bg-foreground/[0.045] p-6 backdrop-blur-xl"
             >
               <div className="flex flex-col md:flex-row gap-4 items-center">
                 <div className="relative flex-1 w-full">
@@ -177,7 +184,7 @@ function PostsContent() {
                     placeholder="搜索文章标题、摘要或标签..."
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
-                    className="pl-10 bg-white/[0.06] border-white/10 text-white placeholder:text-white/40"
+                    className="pl-10 bg-foreground/[0.06] border-foreground/10 text-foreground placeholder:text-foreground/40"
                   />
                 </div>
 
@@ -257,7 +264,7 @@ function PostsContent() {
                     transition={{ duration: 0.6, delay: index * 0.05 }}
                     className="group"
                   >
-                    <article className="h-full overflow-hidden border border-white/10 bg-white/[0.035] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/30 hover:bg-cyan-300/[0.055] flex flex-col">
+                    <article className="h-full overflow-hidden border border-foreground/10 bg-foreground/[0.035] transition duration-300 hover:-translate-y-1 hover:border-cyan-700/30 dark:hover:border-cyan-300/30 hover:bg-cyan-700/[0.055] dark:hover:bg-cyan-300/[0.055] flex flex-col">
                       <div className="p-6 pb-0">
                         {post.category && (
                           <span className={`inline-block px-3 py-1 text-xs font-medium text-white rounded-full bg-gradient-to-r ${categoryColors[post.category.slug] || 'from-slate-500 to-slate-700'}`}>

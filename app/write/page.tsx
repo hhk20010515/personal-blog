@@ -35,6 +35,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import MarkdownEditor from '@/components/editor/MarkdownEditor'
 import MediaLibrary from '@/components/media/MediaLibrary'
+import { uploadMediaFile } from '@/lib/upload-client'
 import Link from 'next/link'
 
 interface Category {
@@ -120,43 +121,30 @@ export default function WritePage() {
 
   // Handle image upload
   const handleImageUpload = async (file: File): Promise<string> => {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData
-    })
-
-    if (!response.ok) {
-      throw new Error('Upload failed')
-    }
-
-    const data = await response.json()
-    return data.url
+    const media = await uploadMediaFile(file)
+    return media.url
   }
 
   // Handle multiple file upload
   const handleMultipleUpload = async (files: File[]): Promise<MediaFile[]> => {
     const uploaded: MediaFile[] = []
-    
+    const failed: string[] = []
+
     for (const file of files) {
       try {
-        const formData = new FormData()
-        formData.append('file', file)
-
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          uploaded.push(data)
-        }
+        uploaded.push(await uploadMediaFile(file))
       } catch (error) {
         console.error('Failed to upload file:', file.name, error)
+        failed.push(error instanceof Error ? error.message : file.name)
       }
+    }
+
+    if (failed.length > 0) {
+      toast({
+        title: `${failed.length} 个文件上传失败`,
+        description: failed.join('；'),
+        variant: 'destructive'
+      })
     }
 
     return uploaded

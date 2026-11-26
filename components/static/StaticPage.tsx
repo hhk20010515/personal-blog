@@ -16,7 +16,7 @@ export default function StaticPage({ title, description, children }: StaticPageP
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">{title}</h1>
             <p className="text-xl text-muted-foreground leading-relaxed mb-10">{description}</p>
-            <div className="prose prose-lg max-w-none text-foreground/80 space-y-6">
+            <div className="prose dark:prose-invert prose-lg max-w-none text-foreground/80 space-y-6">
               {children}
             </div>
           </div>

@@ -343,7 +343,7 @@ export default function AdminSettingsPage() {
                                     : settings.allowedFileTypes.filter(t => t !== type)
                                   updateSetting('allowedFileTypes', types)
                                 }}
-                                className="rounded border-gray-300"
+                                className="rounded border-input"
                               />
                               <Label htmlFor={type} className="text-sm">
                                 .{type}

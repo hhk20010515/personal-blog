@@ -235,7 +235,7 @@ export default function PostComments({ postId }: PostCommentsProps) {
             </p>
           </div>
 
-          <div className="prose prose-sm max-w-none mb-3">
+          <div className="prose dark:prose-invert prose-sm max-w-none mb-3">
             <p>{comment.content}</p>
           </div>
 

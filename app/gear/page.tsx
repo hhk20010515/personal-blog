@@ -85,32 +85,32 @@ export default function GearPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-[#05070c] text-white">
+      <main className="min-h-screen bg-background text-foreground">
         <section className="relative overflow-hidden px-4 pb-16 pt-32 sm:px-6 lg:px-8">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(0,229,255,0.2),transparent_32%),radial-gradient(circle_at_82%_20%,rgba(255,0,128,0.14),transparent_34%),linear-gradient(180deg,#05070c,#090b12)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(0,229,255,0.2),transparent_32%),radial-gradient(circle_at_82%_20%,rgba(255,0,128,0.14),transparent_34%)]" />
           <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-end">
             <motion.div
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
             >
-              <p className="mb-5 inline-flex items-center gap-3 border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2 text-xs uppercase tracking-[0.28em] text-cyan-100">
+              <p className="mb-5 inline-flex items-center gap-3 border border-cyan-700/20 dark:border-cyan-300/20 bg-cyan-700/[0.08] dark:bg-cyan-300/[0.08] px-4 py-2 text-xs uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-100">
                 <Cpu className="h-4 w-4" />
                 Gear Lab
               </p>
               <h1 className="text-5xl font-semibold leading-[0.96] tracking-normal sm:text-7xl">
                 摄影器材测评，
-                <span className="block text-cyan-100/72">用参数解释体验。</span>
+                <span className="block text-cyan-700/72 dark:text-cyan-100/72">用参数解释体验。</span>
               </h1>
-              <p className="mt-7 max-w-2xl text-base leading-8 text-white/60">
+              <p className="mt-7 max-w-2xl text-base leading-8 text-foreground/60">
                 面向所有摄影爱好者，记录相机、镜头、灯光、稳定器和影像工作流工具的真实体验、硬核规格和样片观察。
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href="/write" className="inline-flex items-center justify-center gap-3 bg-cyan-300 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-100">
+                <Link href="/write" className="inline-flex items-center justify-center gap-3 bg-cyan-700 dark:bg-cyan-300 px-6 py-3 text-sm font-semibold text-background transition hover:bg-cyan-700 dark:hover:bg-cyan-100">
                   分享测评
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link href="/search?q=器材" className="inline-flex items-center justify-center gap-3 border border-white/10 bg-white/[0.05] px-6 py-3 text-sm font-semibold text-white transition hover:border-cyan-300/30 hover:bg-cyan-300/[0.08]">
+                <Link href="/search?q=器材" className="inline-flex items-center justify-center gap-3 border border-foreground/10 bg-foreground/[0.05] px-6 py-3 text-sm font-semibold text-foreground transition hover:border-cyan-700/30 dark:hover:border-cyan-300/30 hover:bg-cyan-700/[0.08] dark:hover:bg-cyan-300/[0.08]">
                   搜索器材
                 </Link>
               </div>
@@ -132,7 +132,7 @@ export default function GearPage() {
 
         <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
           {loading ? (
-            <div className="border border-white/10 bg-white/[0.035] p-8 text-white/50">正在加载器材测评...</div>
+            <div className="border border-foreground/10 bg-foreground/[0.035] p-8 text-foreground/50">正在加载器材测评...</div>
           ) : posts.length > 0 ? (
             <div className="grid gap-5 lg:grid-cols-3">
               {posts.map((post, index) => (
@@ -144,8 +144,8 @@ export default function GearPage() {
                   viewport={{ once: true }}
                   className="group"
                 >
-                  <Link href={`/posts/${post.slug}`} className="block h-full border border-white/10 bg-white/[0.035] transition hover:border-cyan-300/30 hover:bg-cyan-300/[0.055]">
-                    <div className="relative aspect-[4/3] overflow-hidden bg-cyan-300/[0.06]">
+                  <Link href={`/posts/${post.slug}`} className="block h-full border border-foreground/10 bg-foreground/[0.035] transition hover:border-cyan-700/30 dark:hover:border-cyan-300/30 hover:bg-cyan-700/[0.055] dark:hover:bg-cyan-300/[0.055]">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-cyan-700/[0.06] dark:bg-cyan-300/[0.06]">
                       {post.media[0]?.media.url ? (
                         <img
                           src={post.media[0].media.url}
@@ -155,19 +155,19 @@ export default function GearPage() {
                       ) : (
                         <div className="h-full w-full bg-[linear-gradient(135deg,rgba(0,229,255,0.18),rgba(255,0,128,0.12))]" />
                       )}
-                      <div className="absolute left-4 top-4 border border-cyan-300/30 bg-black/40 px-3 py-1 text-xs font-semibold text-cyan-100 backdrop-blur">
+                      <div className="dark absolute left-4 top-4 border border-cyan-700/30 dark:border-cyan-300/30 bg-black/40 px-3 py-1 text-xs font-semibold text-cyan-700 dark:text-cyan-100 backdrop-blur">
                         {post.reviewRating ? `${post.reviewRating.toFixed(1)} / 10` : post.gearType || 'Gear'}
                       </div>
                     </div>
 
                     <div className="p-5">
-                      <p className="mb-3 text-xs uppercase tracking-[0.2em] text-white/40">
+                      <p className="mb-3 text-xs uppercase tracking-[0.2em] text-foreground/40">
                         {formatDate(post.publishedAt, post.createdAt)}
                       </p>
-                      <h2 className="text-2xl font-semibold leading-tight tracking-normal transition group-hover:text-cyan-100">
+                      <h2 className="text-2xl font-semibold leading-tight tracking-normal transition group-hover:text-cyan-700 dark:group-hover:text-cyan-100">
                         {post.title}
                       </h2>
-                      <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/50">{post.excerpt || '暂无摘要'}</p>
+                      <p className="mt-3 line-clamp-2 text-sm leading-6 text-foreground/50">{post.excerpt || '暂无摘要'}</p>
 
                       <div className="mt-5 grid grid-cols-2 gap-2 text-xs">
                         <Param label="型号" value={[post.gearBrand, post.gearModel].filter(Boolean).join(' ')} />
@@ -183,10 +183,10 @@ export default function GearPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-3">
               {fallbackGear.map((item) => (
-                <div key={item.title} className="border border-white/10 bg-white/[0.035] p-6">
-                  <p className="mb-4 text-xs uppercase tracking-[0.22em] text-cyan-100/55">{item.spec}</p>
+                <div key={item.title} className="border border-foreground/10 bg-foreground/[0.035] p-6">
+                  <p className="mb-4 text-xs uppercase tracking-[0.22em] text-cyan-700/55 dark:text-cyan-100/55">{item.spec}</p>
                   <h2 className="text-2xl font-semibold">{item.title}</h2>
-                  <p className="mt-4 text-sm leading-6 text-white/50">{item.description}</p>
+                  <p className="mt-4 text-sm leading-6 text-foreground/50">{item.description}</p>
                 </div>
               ))}
             </div>
@@ -200,19 +200,19 @@ export default function GearPage() {
 
 function SpecTile({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
-    <div className="border border-white/10 bg-white/[0.045] p-5 backdrop-blur">
-      <Icon className="mb-5 h-5 w-5 text-cyan-200" />
-      <p className="text-xs uppercase tracking-[0.24em] text-white/40">{label}</p>
-      <p className="mt-3 text-2xl font-semibold text-white">{value}</p>
+    <div className="border border-foreground/10 bg-foreground/[0.045] p-5 backdrop-blur">
+      <Icon className="mb-5 h-5 w-5 text-cyan-700 dark:text-cyan-200" />
+      <p className="text-xs uppercase tracking-[0.24em] text-foreground/40">{label}</p>
+      <p className="mt-3 text-2xl font-semibold text-foreground">{value}</p>
     </div>
   )
 }
 
 function Param({ label, value }: { label: string; value?: string }) {
   return (
-    <div className="border border-white/10 bg-black/20 p-3">
-      <p className="text-white/40">{label}</p>
-      <p className="mt-1 truncate text-cyan-100/80">{value || '-'}</p>
+    <div className="border border-foreground/10 bg-foreground/[0.04] p-3">
+      <p className="text-foreground/40">{label}</p>
+      <p className="mt-1 truncate text-cyan-700/80 dark:text-cyan-100/80">{value || '-'}</p>
     </div>
   )
 }

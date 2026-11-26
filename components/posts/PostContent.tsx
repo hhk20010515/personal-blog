@@ -258,7 +258,7 @@ export default function PostContent({ post }: PostContentProps) {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="prose prose-lg max-w-none"
+        className="prose dark:prose-invert prose-lg max-w-none"
       >
         {/* Featured Media */}
         {post.media.length > 0 && (
@@ -283,16 +283,16 @@ export default function PostContent({ post }: PostContentProps) {
         )}
 
         {gearParams.length > 0 && (
-          <div className="not-prose mb-10 border border-cyan-300/18 bg-[#05070c] p-5 text-white shadow-[0_24px_70px_rgba(0,229,255,0.08)]">
+          <div className="not-prose mb-10 border border-cyan-700/18 dark:border-cyan-300/18 bg-background p-5 text-foreground shadow-[0_24px_70px_rgba(0,229,255,0.08)]">
             <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/55">Gear review matrix</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-cyan-700/55 dark:text-cyan-100/55">Gear review matrix</p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-normal">器材测评参数</h2>
               </div>
               {post.reviewRating && (
-                <div className="border border-cyan-300/25 bg-cyan-300/[0.08] px-4 py-2 text-right">
-                  <p className="text-xs text-cyan-100/55">Rating</p>
-                  <p className="text-2xl font-semibold text-cyan-100">{post.reviewRating.toFixed(1)}</p>
+                <div className="border border-cyan-700/25 dark:border-cyan-300/25 bg-cyan-700/[0.08] dark:bg-cyan-300/[0.08] px-4 py-2 text-right">
+                  <p className="text-xs text-cyan-700/55 dark:text-cyan-100/55">Rating</p>
+                  <p className="text-2xl font-semibold text-cyan-700 dark:text-cyan-100">{post.reviewRating.toFixed(1)}</p>
                 </div>
               )}
             </div>
@@ -300,10 +300,10 @@ export default function PostContent({ post }: PostContentProps) {
               {gearParams.map((item) => {
                 const Icon = item.icon
                 return (
-                  <div key={item.label} className="border border-white/10 bg-white/[0.035] p-4">
-                    <Icon className="mb-3 h-4 w-4 text-cyan-200" />
-                    <p className="text-xs text-white/40">{item.label}</p>
-                    <p className="mt-1 text-sm font-medium text-white/80">{item.value}</p>
+                  <div key={item.label} className="border border-foreground/10 bg-foreground/[0.035] p-4">
+                    <Icon className="mb-3 h-4 w-4 text-cyan-700 dark:text-cyan-200" />
+                    <p className="text-xs text-foreground/40">{item.label}</p>
+                    <p className="mt-1 text-sm font-medium text-foreground/80">{item.value}</p>
                   </div>
                 )
               })}
