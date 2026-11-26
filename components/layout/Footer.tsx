@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Github, Instagram, Twitter, Mail, Heart } from 'lucide-react'
+import { Github, Instagram, Twitter, Mail, Film } from 'lucide-react'
 import { siteConfig } from '@/lib/site'
 
 const navigation = {
@@ -124,10 +124,24 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Made with love */}
+        {/* Personal signature */}
         <div className="text-center mt-8 pt-8 border-t border-foreground/10">
-          <p className="flex items-center justify-center text-sm text-foreground/40">
-            用 <Heart className="h-4 w-4 mx-2 text-cyan-700 dark:text-cyan-300" /> 和 Next.js 制作
+          <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-foreground/40">
+            <Film className="h-4 w-4 text-amber-700 dark:text-amber-200" />
+            <span>{siteConfig.signature}</span>
+            {siteConfig.social.instagram && (
+              <>
+                <span aria-hidden>·</span>
+                <a
+                  href={siteConfig.social.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-colors hover:text-cyan-700 dark:hover:text-cyan-100"
+                >
+                  {siteConfig.instagramHandle}
+                </a>
+              </>
+            )}
           </p>
         </div>
       </div>
